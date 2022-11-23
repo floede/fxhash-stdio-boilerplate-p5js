@@ -49,7 +49,7 @@ const colorWeights = [
   17, 17,
   18, 18, 18,18
 ];
-const colorRoll = colorWeights[Math.floor(random * colorWeights.length)];
+const colorRoll = colorWeights[Math.floor(random() * colorWeights.length)];
 
 const palette = colors[colorRoll]; // 18
 let colorSequence = random > 0.75 ? true : false;
@@ -67,7 +67,7 @@ window.setup = function () {
   }
 
   c = createCanvas(w, h);
-  pg = createGraphics(w, h);
+  // pg = createGraphics(w, h);
   angleMode(DEGREES);
   colorMode(HSB);
 
