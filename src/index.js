@@ -2,59 +2,60 @@ import "p5";
 // Use random functions from stdio and not from p5
 import { random, randomGaussian } from "@altesc/stdio";
 
-const useTexture = true;
-let c;
-let w, h;
-let windowScale;
-let canvasWidth;
-let bgCol;
-let bgLines;
-const format = "wide"; //Math.random() > 0.5 ? "wide" : "high";
-const referenceSize = format === "wide" ? 1000 : 500;
-const aspect = format === "wide" ? 2 / 1 : 1 / 2;
-const mappedCol = random > 0.95 ? true : false;
-const showMargin = random < 0.5 && !mappedCol ? true : false;
-let shapeMargin = true;
-const noOfLines = format === "wide" ? 40 : 20 - (showMargin ? 2 : 0);
-let lineWidth;
-let lineFills = [];
-let shapes;
-let marginFactor = 50;
-let margin = 0; // = true;
-
-// Weighted traits
-let allowSameColor = random < 0.5 ? true : false;
-
-let halfLine = random > 0.85 ? true : false;
-
-// prettier-ignore
-const colorWeights = [
-  0, 
-  1, 1, 1, 1, 
-  2, 2, 2, 2,
-  3, 3, 3,3,
-  4, 4, 4,4,
-  5, 5, 5,5,
-  6, 6, 6,6,
-  7, 7, 7,7,
-  8, 8, 8,8,
-  9, 9, 9,9,
-  10, 10, 10,10,
-  11, 11, 11,11,
-  12, 12, 12,12,
-  13, 
-  14, 14, 14,14,
-  15, 15, 15,15,
-  16, 16, 16,16,
-  17, 17,
-  18, 18, 18,18
-];
-const colorRoll = colorWeights[Math.floor(random * colorWeights.length)];
-
-const palette = colors[colorRoll]; // 18
-let colorSequence = random > 0.75 ? true : false;
-
 window.setup = function () {
+  this.useTexture = true;
+  let c;
+  this.w;
+  this.h;
+  this.windowScale;
+  let canvasWidth;
+  let bgCol;
+  this.bgLines;
+  this.format = "wide"; //Math.random() > 0.5 ? "wide" : "high";
+  this.referenceSize = format === "wide" ? 1000 : 500;
+  this.aspect = format === "wide" ? 2 / 1 : 1 / 2;
+  this.mappedCol = random > 0.95 ? true : false;
+  this.showMargin = random < 0.5 && !mappedCol ? true : false;
+  this.shapeMargin = true;
+  this.noOfLines = format === "wide" ? 40 : 20 - (showMargin ? 2 : 0);
+  this.lineWidth;
+  this.lineFills = [];
+  this.shapes;
+  this.marginFactor = 50;
+  this.margin = 0; // = true;
+
+  // Weighted traits
+  this.allowSameColor = random < 0.5 ? true : false;
+
+  this.halfLine = random > 0.85 ? true : false;
+
+  // prettier-ignore
+  const colorWeights = [
+    0, 
+    1, 1, 1, 1, 
+    2, 2, 2, 2,
+    3, 3, 3,3,
+    4, 4, 4,4,
+    5, 5, 5,5,
+    6, 6, 6,6,
+    7, 7, 7,7,
+    8, 8, 8,8,
+    9, 9, 9,9,
+    10, 10, 10,10,
+    11, 11, 11,11,
+    12, 12, 12,12,
+    13, 
+    14, 14, 14,14,
+    15, 15, 15,15,
+    16, 16, 16,16,
+    17, 17,
+    18, 18, 18,18
+  ];
+  const colorRoll = colorWeights[Math.floor(random() * colorWeights.length)];
+
+  this.palette = colors[colorRoll]; // 18
+  this.colorSequence = random > 0.75 ? true : false;
+
   // Math.random = fxrand();
   randomSeed(fxrand() * 999999);
   noiseSeed(fxrand() * 999999);
@@ -67,19 +68,15 @@ window.setup = function () {
   }
 
   c = createCanvas(w, h);
-  // let pg = createGraphics(w, h);
+  this.pg = createGraphics(w, h);
   angleMode(DEGREES);
   colorMode(HSB);
 
-  console.log("PALETTE: ", this.palette);
-
-  bgCol = mappedCol
-    ? 100
-    : window.palette[Math.floor(random() * palette.length)].hsb;
+  bgCol = mappedCol ? 100 : palette[Math.floor(random() * palette.length)].hsb;
   // background(bgCol);
 
   // constructor(color, width, height, strokeWidth, noOfStrokes)
-  bgLines = new WideLine(bgCol, w, h, windowScale, 2500);
+  this.bgLines = new WideLine(bgCol, w, h, windowScale, 2500);
   push();
   translate(0, 0);
   bgLines.drawLines();
@@ -112,7 +109,7 @@ window.setup = function () {
   lineFills.forEach((fill) => {
     fill.setColors();
   });
-  shapes = random(["diamond", "round", "ellipse", "square", "sine"]);
+  this.shapes = random(["diamond", "round", "ellipse", "square", "sine"]);
 };
 
 window.draw = function () {
@@ -124,7 +121,7 @@ window.draw = function () {
   if (showMargin) {
     margin = marginFactor * windowScale;
   }
-  lineWidth = 0.5 * marginFactor * windowScale; // w / noOfLines;
+  this.lineWidth = 0.5 * marginFactor * windowScale; // w / noOfLines;
   if (format === "wide") {
     lineFills[0].h = height / 2 - (useTexture && margin);
     lineFills[0].y = margin;
@@ -158,7 +155,13 @@ window.draw = function () {
     push();
     //fill(100);
 
-    let firstShape = getShape(shapes, 0 + margin, 0 + margin, shapeW, shapeH);
+    let firstShape = getShape(
+      this.shapes,
+      0 + margin,
+      0 + margin,
+      shapeW,
+      shapeH
+    );
     firstShape.show();
 
     drawingContext.clip();
@@ -167,7 +170,13 @@ window.draw = function () {
 
     push();
     //fill(100);
-    let secondShape = getShape(shapes, width / 2, 0 + margin, shapeW, shapeH);
+    let secondShape = getShape(
+      this.shapes,
+      width / 2,
+      0 + margin,
+      shapeW,
+      shapeH
+    );
     secondShape.show();
 
     drawingContext.clip();
@@ -175,7 +184,7 @@ window.draw = function () {
     pop();
   } else {
     push();
-    let firstShape = getShape(shapes, 0, 0, width, height / 2);
+    let firstShape = getShape(this.shapes, 0, 0, width, height / 2);
     firstShape.show();
 
     drawingContext.clip();
@@ -184,7 +193,7 @@ window.draw = function () {
 
     push();
     fill(100);
-    let secondShape = getShape(shapes, 0, height / 2, width, height / 2);
+    let secondShape = getShape(this.shapes, 0, height / 2, width, height / 2);
     secondShape.show();
 
     drawingContext.clip();
@@ -251,7 +260,7 @@ class LineFill {
       // constructor(color, width, height, strokeWidth, noOfStrokes)
       this.lines[index] = new WideLine(
         this.lineCols[index],
-        (halfLine ? 0.5 : 1) * lineWidth,
+        (halfLine ? 0.5 : 1) * this.lineWidth,
         this.h,
         windowScale,
         (halfLine ? 0.5 : 1) * 25
@@ -264,21 +273,21 @@ class LineFill {
     let lineOffset = !this.forShape && drawMargin ? 4 : 0;
     for (let index = 0; index < noOfLines - lineOffset; index++) {
       x =
-        index * lineWidth +
-        lineWidth / 2 +
+        index * this.lineWidth +
+        this.lineWidth / 2 +
         (this.forShape && !shapeMargin ? 0 : margin);
       //console.log(x, this.y, x, this.h, this);
       strokeCap(SQUARE);
 
       if (useTexture) {
         push();
-        translate(x - lineWidth / 2, this.y);
+        translate(x - this.lineWidth / 2, this.y);
         this.lines[index].height = this.h;
-        this.lines[index].strokeWidth = lineWidth;
+        this.lines[index].strokeWidth = this.lineWidth;
         this.lines[index].drawLines();
         pop();
       } else {
-        strokeWeight((halfLine ? 0.5 : 1) * lineWidth);
+        strokeWeight((halfLine ? 0.5 : 1) * this.lineWidth);
         stroke(this.lineCols[index]);
         line(x, this.y, x, this.h);
       }
@@ -493,11 +502,11 @@ function setDimensions() {
   if (aspect === 1) {
     w = h = floor(min(windowWidth, windowHeight) / noOfLines) * noOfLines;
   } else if (aspect > 1) {
-    w = max(
+    window.w = max(
       1000,
       floor(min(windowWidth, windowHeight * aspect) / noOfLines) * noOfLines
     );
-    h = w / aspect;
+    window.h = w / aspect;
   } else if (aspect < 1) {
     h =
       floor(min(windowWidth / aspect, windowHeight) / (2 * noOfLines)) *
@@ -505,5 +514,5 @@ function setDimensions() {
       noOfLines;
     w = h * aspect;
   }
-  windowScale = map(w, 0, referenceSize, 0, 1);
+  window.windowScale = map(w, 0, referenceSize, 0, 1);
 }
