@@ -3,3 +3,16 @@ body {
   overflow: hidden;
   margin: 0;
 }
+
+canvas {
+  object-fit: contain;
+  position: fixed;
+  z-index: 3;
+  height: 100vh;
+  display: block;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  max-width: 95%;
+  max-height: 95%;
+}
