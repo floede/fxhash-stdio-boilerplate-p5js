@@ -7,6 +7,7 @@ const useTexture = true;
 let c;
 let w, h;
 let windowScale;
+let pd = 1;
 let bgCol;
 let bgLines;
 const format = "wide";
@@ -15,8 +16,8 @@ const referenceSize = format === "wide" ? 1000 : 500;
 const aspect = format === "wide" ? 2 / 1 : 1 / 2;
 
 const mappedColRoll = random("mappedCol", [
-  weight(98, "false"),
-  weight(2, "true"),
+  weight(99, "false"),
+  weight(1, "true"),
 ]);
 const mappedCol = mappedColRoll === "true" ? true : false; // random("Mapped col") > 95 ? true : false;
 
@@ -32,12 +33,12 @@ let margin = 0; // = true;
 
 // Weighted traits
 const allowSameRoll = random("allowSameColor", [
-  weight(50, "true"),
-  weight(50, "false"),
+  weight(70, "true"),
+  weight(30, "false"),
 ]);
 let allowSameColor = allowSameRoll === "true" ? true : false; //random() < 0.5 ? true : false;
 
-let halfLine = random("Half line 85") > 0.85 ? true : false;
+let halfLine = random("Half line 90") > 0.9 ? true : false;
 
 // prettier-ignore
 const colorRoll = random("Color roll", [
@@ -63,7 +64,10 @@ const colorRoll = random("Color roll", [
 ]);
 
 const palette = colors[colorRoll]; // 18
-let colorSequence = random("colorSequence") > 0.75 ? true : false;
+let colorSequence = random("colorSequence") > 0.95 ? true : false;
+const sequenceOffset = colorSequence
+  ? random("Sequence Offset", 0, palette.length, Math.floor)
+  : 0;
 
 window.setup = function () {
   //Math.random = fxrand();
@@ -71,7 +75,7 @@ window.setup = function () {
   noiseSeed(fxrand() * 999999);
 
   setDimensions();
-  pixelDensity(1);
+  pixelDensity(pd);
 
   if (showMargin) {
     margin = marginFactor * windowScale;
@@ -235,12 +239,15 @@ class LineFill {
       // Set lines
       console.log("LINE WIDTH: ", lineWidth);
       // constructor(color, width, height, strokeWidth, noOfStrokes)
+
+      let wideLineWidth = halfLine ? 0.5 * lineWidth : lineWidth;
+
       this.lines[index] = new WideLine(
         this.lineCols[index],
-        (halfLine ? 0.5 : 1) * lineWidth,
+        wideLineWidth,
         this.h,
         windowScale,
-        (halfLine ? 0.5 : 1) * 22,
+        wideLineWidth,
         "Line fill"
       );
     }
@@ -349,10 +356,10 @@ class Square {
     noStroke();
     rectMode(CENTER);
     rect(
-      this.x + this.w / 2,
+      -windowScale + this.x + this.w / 2,
       this.y + this.h / 2,
       this.w - 8 * lineWidth,
-      this.h - (showMargin ? 6 : 8) * lineWidth
+      this.h - (true ? 6 : 8) * lineWidth
     );
   }
 }
@@ -523,3 +530,31 @@ function setDimensions() {
   }
   windowScale = map(w, 0, referenceSize, 0, 1);
 }
+
+window.keyPressed = function () {
+  if (key === "s" || key === "S") {
+    console.log("SAVE");
+    saveCanvas("simnple_lines" + width * pd + "x" + height * pd, "png");
+  }
+  if (
+    key === "1" ||
+    key === "2" ||
+    key === "3" ||
+    key === "4" ||
+    key === "5" ||
+    key === "6" ||
+    key === "7" ||
+    key === "8" ||
+    key === "9"
+  ) {
+    clear();
+    pd = 1 * key;
+    pixelDensity(pd);
+    fxrand = sfc32(...hashes);
+    //init();
+    //paper();
+    //layoutGrid();
+    //coloring();
+    draw();
+  }
+};
