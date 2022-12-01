@@ -1,7 +1,6 @@
 import "p5";
 // Use random functions from stdio and not from p5
-import { random, weight } from "@altesc/stdio";
-import { randomBoolean } from "@altesc/stdio";
+import { random, randomBoolean, weight } from "@altesc/stdio";
 
 const useTexture = true;
 let c;
@@ -15,13 +14,9 @@ const renderSize = 1040;
 const referenceSize = format === "wide" ? 1000 : 500;
 const aspect = format === "wide" ? 2 / 1 : 1 / 2;
 
-const mappedColRoll = random("mappedCol", [
-  weight(99, "false"),
-  weight(1, "true"),
-]);
-const mappedCol = mappedColRoll === "true" ? true : false; // random("Mapped col") > 95 ? true : false;
+const mappedCol = randomBoolean("Mapped color", 0.01);
 
-const showMargin = random("Show margin") < 0.5 && !mappedCol ? true : false;
+const showMargin = mappedCol ? false : randomBoolean("Show margin", 0.5);
 
 let shapeMargin = true;
 const noOfLines = format === "wide" ? 40 : 20 - (showMargin ? 2 : 0);
@@ -32,13 +27,9 @@ let marginFactor = 50;
 let margin = 0; // = true;
 
 // Weighted traits
-const allowSameRoll = random("allowSameColor", [
-  weight(70, "true"),
-  weight(30, "false"),
-]);
-let allowSameColor = allowSameRoll === "true" ? true : false; //random() < 0.5 ? true : false;
+let allowSameColor = randomBoolean("Allow same color", 0.7);
 
-let halfLine = random("Half line 90") > 0.9 ? true : false;
+let halfLine = randomBoolean("Half line", 0.1);
 
 // prettier-ignore
 const colorRoll = random("Color roll", [
@@ -64,10 +55,7 @@ const colorRoll = random("Color roll", [
 ]);
 
 const palette = colors[colorRoll]; // 18
-let colorSequence = random("colorSequence") > 0.95 ? true : false;
-const sequenceOffset = colorSequence
-  ? random("Sequence Offset", 0, palette.length, Math.floor)
-  : 0;
+let colorSequence = randomBoolean("colorSequence", 0.05);
 
 window.setup = function () {
   //Math.random = fxrand();
@@ -140,7 +128,6 @@ window.draw = function () {
     margin = marginFactor * windowScale;
   }
   lineWidth = (referenceSize / noOfLines) * windowScale; // w / noOfLines;
-  console.log("DRAW LINE WIDTH: ", lineWidth);
 
   if (format === "wide") {
     lineFills[0].h = height / 2 - (useTexture && margin);
