@@ -1,3 +1,5 @@
+// TODO: why is the Wideline too wide?
+
 import "p5";
 // Use random functions from stdio and not from p5
 import { random, randomBoolean, weight } from "@altesc/stdio";
