@@ -54,7 +54,9 @@ const colorRoll = random("Color roll", [
   weight(6, 18),
 ]);
 
-const palette = colors[colorRoll]; // 18
+const palette = colors[colorRoll].colArr;
+const paletteName = colors[colorRoll].name;
+const paletteOffset = colors[colorRoll].offset;
 let colorSequence = randomBoolean("colorSequence", 0.05);
 
 window.setup = function () {
@@ -127,7 +129,7 @@ window.draw = function () {
   if (showMargin) {
     margin = marginFactor * windowScale;
   }
-  lineWidth = (referenceSize / noOfLines) * windowScale; // w / noOfLines;
+  lineWidth = (referenceSize / noOfLines) * windowScale;
 
   if (format === "wide") {
     lineFills[0].h = height / 2 - (useTexture && margin);
@@ -423,7 +425,7 @@ class WideLine {
     this.context = context;
 
     for (let index = 0; index < this.noOfStrokes; index++) {
-      const colOffset = 2;
+      const colOffset = paletteOffset;
       const posOffset = 0;
       this.strokes[index] = {
         h: random(-colOffset, colOffset) + this.color[0],
