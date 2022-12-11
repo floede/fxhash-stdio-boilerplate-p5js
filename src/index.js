@@ -1,4 +1,4 @@
-// TODO: why is the Wideline too wide?
+// TODO: Turn off no shape margin for round and ellipse
 
 import "p5";
 // Use random functions from stdio and not from p5
@@ -11,6 +11,7 @@ let windowScale;
 let pd = 1;
 let bgCol;
 let bgLines;
+let features = {};
 const format = "wide";
 const renderSize = 1040;
 const referenceSize = format === "wide" ? 1000 : 500;
@@ -20,13 +21,13 @@ const mappedCol = randomBoolean("Mapped color", 0.01);
 
 const showMargin = mappedCol ? false : randomBoolean("Show margin", 0.5);
 
-let shapeMargin = true;
-const noOfLines = format === "wide" ? 40 : 20 - (showMargin ? 2 : 0);
+let shapeMargin = randomBoolean("Shape margin", 0.5);
+const noOfLines = 40;
 let lineWidth;
 let lineFills = [];
 let shapes;
 let marginFactor = 50;
-let margin = 0; // = true;
+let margin = 0;
 
 // Weighted traits
 let allowSameColor = randomBoolean("Allow same color", 0.7);
@@ -152,10 +153,11 @@ window.draw = function () {
   if (format === "wide") {
     let shapeW = width / 2 - (shapeMargin ? margin : 0);
     let shapeH = height - 2 * (shapeMargin ? margin : 0);
+    let shapeOffset = shapeMargin ? margin : 0;
     push();
     //fill(100);
 
-    let firstShape = getShape(shapes, 0 + margin, 0 + margin, shapeW, shapeH);
+    let firstShape = getShape(shapes, shapeOffset, shapeOffset, shapeW, shapeH);
     firstShape.show();
 
     drawingContext.clip();
@@ -164,7 +166,7 @@ window.draw = function () {
 
     push();
     //fill(100);
-    let secondShape = getShape(shapes, width / 2, 0 + margin, shapeW, shapeH);
+    let secondShape = getShape(shapes, width / 2, shapeOffset, shapeW, shapeH);
 
     secondShape.show();
 
@@ -178,10 +180,35 @@ window.draw = function () {
     noiseField("perlin", pg);
     image(pg, 0, 0);
   }
+
+  /*   strokeWeight(3);
+  stroke(100);
+  strokeWeight(2);
+  line(0, h / 2, w, h / 2);
+  line(w / 2, 0, w / 2, h);
+  line(margin, 0, margin, h);
+  line(w - margin, 0, w - margin, h);
+  line(0, margin, w, margin);
+  line(0, h - margin, w, h - margin); */
+
+  features = {
+    Margin: showMargin,
+    Shape: shapes,
+    Palette: paletteName,
+    "Mapped color": mappedCol,
+    "Allow color repetition": allowSameColor,
+    "Sequential color": colorSequence,
+    "Half line": halfLine,
+  };
+
+  console.table(features);
+
   noLoop();
 
   fxpreview();
 };
+
+window.$fxhashFeatures = features;
 
 class LineFill {
   constructor(y, h, palette, inverse = false, forShape = false) {
@@ -229,16 +256,17 @@ class LineFill {
       }
       // Set lines
       console.log("LINE WIDTH: ", lineWidth);
-      // constructor(color, width, height, strokeWidth, noOfStrokes)
 
       let wideLineWidth = halfLine ? 0.5 * lineWidth : lineWidth;
+      let wideLineStrokes = halfLine ? 12.5 : 25;
 
+      // constructor(color, width, height, strokeWidth, noOfStrokes)
       this.lines[index] = new WideLine(
         this.lineCols[index],
         wideLineWidth,
         this.h,
         windowScale,
-        wideLineWidth,
+        wideLineStrokes,
         "Line fill"
       );
     }
@@ -297,10 +325,18 @@ class Diamond {
 
 class Round {
   constructor(x, y, w, h) {
-    this.x = x + (1 / 2) * w;
-    this.y = y + (1 / 2) * h;
-    this.w = w - (showMargin ? 6 : 4) * lineWidth;
-    this.h = h - 4 * lineWidth;
+    let wOffset;
+    if (!showMargin) {
+      wOffset = 4;
+    } else if (showMargin && !shapeMargin) {
+      wOffset = 2;
+    } else {
+      wOffset = 6;
+    }
+    this.x = -windowScale + x + w / 2;
+    this.y = y + h / 2;
+    this.w = w - wOffset * lineWidth;
+    this.h = h - (!shapeMargin && showMargin ? 2 : 4) * lineWidth;
   }
 
   show() {
@@ -312,7 +348,7 @@ class Round {
 
 class SuperEllipse {
   constructor(x, y, w, h) {
-    this.x = x;
+    this.x = -windowScale + x;
     this.y = y;
     this.w = w;
     this.h = h;
@@ -390,13 +426,18 @@ class Hexagon {
     this.w = w;
     this.h = h;
     this.gs = 0.25 * h;
+    this.yOffset = shapeMargin ? margin : 0;
   }
 
   show() {
     noStroke();
     rectMode(CENTER);
     push();
-    translate(this.w / 2, -margin + this.y + this.h / 2);
+    //rotate(30);
+    translate(this.w / 2, -this.yOffset + this.y + this.h / 2);
+    //troke(20);
+    //circle(0, 0, 40);
+    //noStroke();
     beginShape();
     vertex(this.x - this.gs, this.y - sqrt(3) * this.gs);
     vertex(this.x + this.gs, this.y - sqrt(3) * this.gs);
