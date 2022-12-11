@@ -1,4 +1,4 @@
-// TODO: Turn off no shape margin for round and ellipse
+// TODO: Finish shapeMargin for Sine
 
 import "p5";
 // Use random functions from stdio and not from p5
@@ -158,6 +158,7 @@ window.draw = function () {
     //fill(100);
 
     let firstShape = getShape(shapes, shapeOffset, shapeOffset, shapeW, shapeH);
+    console.log("FIRST SHAPE:", firstShape);
     firstShape.show();
 
     drawingContext.clip();
@@ -167,7 +168,7 @@ window.draw = function () {
     push();
     //fill(100);
     let secondShape = getShape(shapes, width / 2, shapeOffset, shapeW, shapeH);
-
+    console.log("SECOND SHAPE:", secondShape);
     secondShape.show();
 
     drawingContext.clip();
@@ -386,7 +387,7 @@ class Square {
       -windowScale + this.x + this.w / 2,
       this.y + this.h / 2,
       this.w - 8 * lineWidth,
-      this.h - (true ? 6 : 8) * lineWidth
+      this.h - (!shapeMargin ? 2 : 8) * lineWidth
     );
   }
 }
@@ -397,15 +398,40 @@ class Sine {
     this.y = y;
     this.w = w;
     this.h = h;
+    this.diameter = sqrt(pow(this.h / 2, 2) + pow(this.w / 2, 2));
     this.round = 200;
+    this.xOffset = shapeMargin
+      ? this.x >= w / 2
+        ? -margin / 2
+        : margin / 2
+      : 0;
   }
 
   show() {
     noStroke();
     rectMode(CENTER);
     push();
-    translate(this.x + this.w / 2, this.y + this.h / 2);
-    rotate(45);
+    console.log("TRANSLATE: ", this.x + this.w / 2);
+    translate(this.x + this.w / 2 + this.xOffset, this.y + this.h / 2);
+    beginShape();
+    for (let t = 0; t <= 360; t += 5) {
+      let x, y;
+      if (t === 0 || t === 315) {
+        x = this.w / 2 - (!shapeMargin ? margin / 2 : 0);
+        y = this.y;
+        t += 45;
+      } else if (t === 135) {
+        x = -this.w / 2 + margin / 2;
+        y = this.y;
+        t += 90;
+      } else {
+        x = ((this.diameter - margin) / 2) * cos(t);
+        y = ((this.diameter - margin) / 2) * sin(t);
+      }
+      vertex(x, y);
+    }
+    endShape(CLOSE);
+    /*     rotate(45);
     rect(
       0,
       0,
@@ -415,7 +441,7 @@ class Sine {
       0,
       this.round,
       0
-    );
+    ); */
     pop();
   }
 }
