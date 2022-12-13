@@ -1,4 +1,4 @@
-// TODO: Finish shapeMargin for Sine
+// TODO: I halfline acceptable ?
 
 import "p5";
 // Use random functions from stdio and not from p5
@@ -378,16 +378,25 @@ class Square {
     this.y = y;
     this.w = w;
     this.h = h;
+    this.xOffset = shapeMargin ? 0 : this.x >= w / 2 ? -margin / 2 : margin / 2;
   }
 
   show() {
     noStroke();
     rectMode(CENTER);
+    let hAdjust;
+    if (margin && shapeMargin) {
+      hAdjust = 6;
+    } else if (margin && !shapeMargin) {
+      hAdjust = 2;
+    } else {
+      hAdjust = 4;
+    }
     rect(
-      -windowScale + this.x + this.w / 2,
+      -windowScale + this.x + this.w / 2 + this.xOffset,
       this.y + this.h / 2,
       this.w - 8 * lineWidth,
-      this.h - (!shapeMargin ? 2 : 8) * lineWidth
+      this.h - hAdjust * lineWidth
     );
   }
 }
@@ -400,11 +409,6 @@ class Sine {
     this.h = h;
     this.diameter = sqrt(pow(this.h / 2, 2) + pow(this.w / 2, 2));
     this.round = 200;
-    this.xOffset = shapeMargin
-      ? this.x >= w / 2
-        ? -margin / 2
-        : margin / 2
-      : 0;
   }
 
   show() {
@@ -412,21 +416,21 @@ class Sine {
     rectMode(CENTER);
     push();
     console.log("TRANSLATE: ", this.x + this.w / 2);
-    translate(this.x + this.w / 2 + this.xOffset, this.y + this.h / 2);
+    translate(this.x + this.w / 2, this.y + this.h / 2);
     beginShape();
     for (let t = 0; t <= 360; t += 5) {
       let x, y;
       if (t === 0 || t === 315) {
-        x = this.w / 2 - (!shapeMargin ? margin / 2 : 0);
-        y = this.y;
+        x = this.w / 2;
+        y = this.y - (shapeMargin ? margin : 0);
         t += 45;
       } else if (t === 135) {
-        x = -this.w / 2 + margin / 2;
-        y = this.y;
+        x = -this.w / 2;
+        y = this.y - (shapeMargin ? margin : 0);
         t += 90;
       } else {
-        x = ((this.diameter - margin) / 2) * cos(t);
-        y = ((this.diameter - margin) / 2) * sin(t);
+        x = (this.diameter / 2) * cos(t);
+        y = (this.diameter / 2) * sin(t);
       }
       vertex(x, y);
     }
