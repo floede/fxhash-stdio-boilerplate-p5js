@@ -5,8 +5,7 @@ import "p5";
 import { random, randomBoolean, weight } from "@altesc/stdio";
 
 const useTexture = true;
-let c;
-let w, h;
+let c, w, h;
 let windowScale;
 let pd = 1;
 let bgCol;
@@ -75,12 +74,12 @@ window.setup = function () {
   }
 
   c = createCanvas(w, h);
-  // pg = createGraphics(w, h);
   angleMode(DEGREES);
   colorMode(HSB);
 
-  bgCol = mappedCol ? 100 : palette[Math.floor(random() * palette.length)].hsb;
-  // background(bgCol);
+  bgCol = mappedCol
+    ? [0, 0, 10]
+    : palette[Math.floor(random() * palette.length)].hsb;
 
   lineWidth = (referenceSize / noOfLines) * windowScale;
 
@@ -148,17 +147,15 @@ window.draw = function () {
     lineFills[1].show(showMargin);
   }
   noStroke();
-  fill(100, 0);
+  //  fill(100, 0);
 
   if (format === "wide") {
     let shapeW = width / 2 - (shapeMargin ? margin : 0);
     let shapeH = height - 2 * (shapeMargin ? margin : 0);
     let shapeOffset = shapeMargin ? margin : 0;
     push();
-    //fill(100);
-
+    fill(bgCol);
     let firstShape = getShape(shapes, shapeOffset, shapeOffset, shapeW, shapeH);
-    console.log("FIRST SHAPE:", firstShape);
     firstShape.show();
 
     drawingContext.clip();
@@ -166,20 +163,13 @@ window.draw = function () {
     pop();
 
     push();
-    //fill(100);
+    fill(bgCol);
     let secondShape = getShape(shapes, width / 2, shapeOffset, shapeW, shapeH);
-    console.log("SECOND SHAPE:", secondShape);
     secondShape.show();
 
     drawingContext.clip();
     lineFills[3].show();
     pop();
-  }
-
-  if (!useTexture) {
-    pg.background(0);
-    noiseField("perlin", pg);
-    image(pg, 0, 0);
   }
 
   /*   strokeWeight(3);
@@ -385,12 +375,10 @@ class Square {
     noStroke();
     rectMode(CENTER);
     let hAdjust;
-    if (margin && shapeMargin) {
-      hAdjust = 6;
-    } else if (margin && !shapeMargin) {
+    if (margin && !shapeMargin) {
       hAdjust = 2;
     } else {
-      hAdjust = 4;
+      hAdjust = 6;
     }
     rect(
       -windowScale + this.x + this.w / 2 + this.xOffset,
