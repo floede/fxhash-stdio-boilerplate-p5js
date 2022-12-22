@@ -24,7 +24,14 @@ let shapeMargin = randomBoolean("Shape margin", 0.5);
 const noOfLines = 40;
 let lineWidth;
 let lineFills = [];
-let shapes;
+const shapes = random("Shape", [
+  "diamond",
+  "round",
+  "ellipse",
+  "square",
+  "sine",
+  "hexagon",
+]);
 let marginFactor = 50;
 let margin = 0;
 
@@ -110,14 +117,6 @@ window.setup = function () {
   lineFills.forEach((fill) => {
     fill.setColors();
   });
-  shapes = random("Shape", [
-    "diamond",
-    "round",
-    "ellipse",
-    "square",
-    "sine",
-    "hexagon",
-  ]);
 };
 
 window.draw = function () {
@@ -147,14 +146,14 @@ window.draw = function () {
     lineFills[1].show(showMargin);
   }
   noStroke();
-  //  fill(100, 0);
 
   if (format === "wide") {
     let shapeW = width / 2 - (shapeMargin ? margin : 0);
     let shapeH = height - 2 * (shapeMargin ? margin : 0);
     let shapeOffset = shapeMargin ? margin : 0;
     push();
-    fill(bgCol);
+    !halfLine ? fill(100, 0) : fill(bgCol);
+
     let firstShape = getShape(shapes, shapeOffset, shapeOffset, shapeW, shapeH);
     firstShape.show();
 
@@ -163,7 +162,7 @@ window.draw = function () {
     pop();
 
     push();
-    fill(bgCol);
+    !halfLine ? fill(100, 0) : fill(bgCol);
     let secondShape = getShape(shapes, width / 2, shapeOffset, shapeW, shapeH);
     secondShape.show();
 
@@ -182,23 +181,23 @@ window.draw = function () {
   line(0, margin, w, margin);
   line(0, h - margin, w, h - margin); */
 
-  features = {
-    Margin: showMargin,
-    Shape: shapes,
-    Palette: paletteName,
-    "Mapped color": mappedCol,
-    "Allow color repetition": allowSameColor,
-    "Sequential color": colorSequence,
-    "Half line": halfLine,
-  };
-
-  console.table(features);
-
   noLoop();
 
   fxpreview();
 };
 
+features = {
+  Margin: showMargin,
+  Shape: shapes,
+  "Margin for shapes": shapeMargin,
+  Palette: paletteName,
+  "Mapped color": mappedCol,
+  "Allow color repetition": allowSameColor,
+  "Sequential color": colorSequence,
+  "Half line": halfLine,
+};
+
+console.table(features);
 window.$fxhashFeatures = features;
 
 class LineFill {
