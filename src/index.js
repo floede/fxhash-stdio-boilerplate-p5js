@@ -4,44 +4,31 @@ import "p5";
 // Use random functions from stdio and not from p5
 import { random, randomBoolean, weight } from "@altesc/stdio";
 
-const useTexture = true;
 let c, w, h;
 let windowScale;
 let pd = 1;
 let bgCol;
-let bgLines;
 let features = {};
-const format = "wide";
-const renderSize = 1040;
-const referenceSize = format === "wide" ? 1000 : 500;
-const aspect = format === "wide" ? 2 / 1 : 1 / 2;
+const renderSize = 1000;
+const referenceSize = 1000;
+const aspect = 1 / 1;
 
-const mappedCol = randomBoolean("Mapped color", 0.01);
+const HexSize = 100;
+const HexSide = HexSize / Math.sqrt(3);
+const r = (HexSide * Math.sqrt(3)) / 2;
+const HexHeight = 1.5 * HexSide;
 
-const showMargin = mappedCol ? false : randomBoolean("Show margin", 0.5);
+const shuffleColors = true;
 
-let shapeMargin = randomBoolean("Shape margin", 0.5);
-const noOfLines = 40;
-let lineWidth;
-let lineFills = [];
-const shapes = random("Shape", [
-  "diamond",
-  "round",
-  "ellipse",
-  "square",
-  "sine",
-  "hexagon",
-]);
-let marginFactor = 50;
-let margin = 0;
-
-// Weighted traits
-let allowSameColor = randomBoolean("Allow same color", 0.7);
-
-let halfLine = randomBoolean("Half line", 0.1);
+const colors = [
+  [164, 87],
+  [195, 80],
+  [346, 60],
+];
+const shades = [20, 50, 80];
 
 // prettier-ignore
-const colorRoll = random("Color roll", [
+/* const colorRoll = random("Color roll", [
   weight(1, 0),
   weight(6, 1),
   weight(6, 2),
@@ -61,12 +48,10 @@ const colorRoll = random("Color roll", [
   weight(6, 16),
   weight(2, 17),
   weight(6, 18),
-]);
+]); */
 
-const palette = colors[colorRoll].colArr;
-const paletteName = colors[colorRoll].name;
-const paletteOffset = colors[colorRoll].offset;
-let colorSequence = randomBoolean("colorSequence", 0.05);
+// const palette = colors[colorRoll].colArr;
+// const paletteName = colors[colorRoll].name;
 
 window.setup = function () {
   //Math.random = fxrand();
@@ -76,101 +61,35 @@ window.setup = function () {
   setDimensions();
   pixelDensity(pd);
 
-  if (showMargin) {
-    margin = marginFactor * windowScale;
-  }
-
-  c = createCanvas(w, h);
+  c = createCanvas(w, h, WEBGL);
   angleMode(DEGREES);
   colorMode(HSB);
 
-  bgCol = mappedCol
-    ? [0, 0, 10]
-    : palette[Math.floor(random() * palette.length)].hsb;
+  bgCol = [
+    ...colors[Math.floor(random(0, 3))],
+    shades[Math.floor(random(0, 3))],
+  ];
 
-  lineWidth = (referenceSize / noOfLines) * windowScale;
-
-  // constructor(color, width, height, strokeWidth, noOfStrokes)
-  bgLines = new WideLine(bgCol, w, h, windowScale, w, "background");
-  push();
-  translate(0, 0);
-  bgLines.drawLines();
-  pop();
-
-  noFill();
-  noStroke();
-
-  if (format === "wide") {
-    // Top half background
-    lineFills.push(
-      new LineFill(margin, height / 2 - (useTexture && margin), palette, true)
-    );
-    // Lower half background
-    lineFills.push(
-      new LineFill(height / 2, height / 2 - margin, palette, true)
-    );
-
-    lineFills.push(new LineFill(0, height, palette, false, true));
-    lineFills.push(new LineFill(0, height, palette, false, true));
-  }
-
-  lineFills.forEach((fill) => {
-    fill.setColors();
-  });
+  background(bgCol);
 };
 
 window.draw = function () {
-  push();
-  translate(0, 0);
-  bgLines.height = h;
-  bgLines.width = w;
-  bgLines.strokeWidth = windowScale;
-  bgLines.drawLines();
-  pop();
-  if (showMargin) {
-    margin = marginFactor * windowScale;
+  translate(-width / 2, -height / 2);
+  for (let row = 0; row < h / (r * Math.sqrt(3)) - 2; row++) {
+    for (let col = 0; col < w / (HexSize + (row % 2)) - 1; col++) {
+      push();
+      let YOffset = false ? random(-r, +r) : 0;
+      let currX = col * HexSize + 2.5 * r - (row % 2) * r;
+      let currY = row * (r * (Math.sqrt(3) / 3)) + YOffset + 2 * HexSide;
+      translate(currX, currY);
+      // circle(0, 0, 20);
+      rotate(90);
+      if (random() > 0) {
+        drawHex(0, 0, HexSide, currX, currY);
+      }
+      pop();
+    }
   }
-  lineWidth = (referenceSize / noOfLines) * windowScale;
-
-  if (format === "wide") {
-    lineFills[0].h = height / 2 - (useTexture && margin);
-    lineFills[0].y = margin;
-    lineFills[1].y = height / 2;
-    lineFills[1].h = (useTexture ? height / 2 : height) - margin;
-    height / 2 - margin;
-    lineFills[2].h = height;
-    lineFills[3].h = height;
-    // Top half background
-    lineFills[0].show(showMargin);
-    // Lower half background
-    lineFills[1].show(showMargin);
-  }
-  noStroke();
-
-  if (format === "wide") {
-    let shapeW = width / 2 - (shapeMargin ? margin : 0);
-    let shapeH = height - 2 * (shapeMargin ? margin : 0);
-    let shapeOffset = shapeMargin ? margin : 0;
-    push();
-    !halfLine ? fill(100, 0) : fill(bgCol);
-
-    let firstShape = getShape(shapes, shapeOffset, shapeOffset, shapeW, shapeH);
-    firstShape.show();
-
-    drawingContext.clip();
-    lineFills[2].show();
-    pop();
-
-    push();
-    !halfLine ? fill(100, 0) : fill(bgCol);
-    let secondShape = getShape(shapes, width / 2, shapeOffset, shapeW, shapeH);
-    secondShape.show();
-
-    drawingContext.clip();
-    lineFills[3].show();
-    pop();
-  }
-
   /*   strokeWeight(3);
   stroke(100);
   strokeWeight(2);
@@ -187,338 +106,60 @@ window.draw = function () {
 };
 
 features = {
-  Margin: showMargin,
-  Shape: shapes,
-  "Margin for shapes": shapeMargin,
-  Palette: paletteName,
-  "Mapped color": mappedCol,
-  "Allow color repetition": allowSameColor,
-  "Sequential color": colorSequence,
-  "Half line": halfLine,
+  Features: "features",
 };
 
 console.table(features);
 window.$fxhashFeatures = features;
 
-class LineFill {
-  constructor(y, h, palette, inverse = false, forShape = false) {
-    // this.x = x;
-    this.y = y;
-    // this.w = w;
-    this.h = h;
+function drawHex(x, y, len, currX, currY) {
+  let gs = 0.5 * len;
+  let tlc = [x - gs, y - r]; // left top corner
+  let tcen = [x, y - r];
+  let trc = [x + gs, y - r]; // top right corner
+  let two = [0.75 * len, -0.5 * r];
+  let rmc = [x + len, y]; // right most corner
+  let four = [0.75 * len, 0.5 * r];
+  let brc = [x + gs, y + r]; // bottom right corner
+  let bcen = [x, y + r];
+  let blc = [x - gs, y + r]; // bottom left corner
+  let eight = [-0.75 * len, 0.5 * r];
+  let lmc = [x - len, y]; // left most corner
+  let ten = [-0.75 * len, -0.5 * r];
 
-    this.palette = palette;
-    this.lines = [];
-    this.lineCols = [];
-    this.inverse = inverse;
-    this.forShape = forShape;
-  }
-  setColors() {
-    let prevCol;
-    let colOrder = this.inverse ? palette.length - 1 : 0;
-    for (let index = 0; index < noOfLines; index++) {
-      if (mappedCol) {
-        this.lineCols[index] = [getMapColor(index, this.inverse), 100, 100];
-      } else if (colorSequence) {
-        if (this.inverse) {
-          if (colOrder < 0) {
-            colOrder = palette.length - 1;
-          }
-          this.lineCols[index] = palette[colOrder].hsb;
-          colOrder--;
-        } else {
-          if (colOrder > palette.length - 1) {
-            colOrder = 0;
-          }
-          this.lineCols[index] = palette[colOrder].hsb;
-          colOrder++;
-        }
-      } else {
-        let pickedCol;
-        if (allowSameColor || index === 0) {
-          pickedCol = palette[Math.floor(fxrand() * palette.length)].hsb;
-        } else {
-          let tempArr = palette.filter((c) => c.hsb !== prevCol);
-          pickedCol = tempArr[Math.floor(fxrand() * tempArr.length)].hsb;
-        }
-        this.lineCols[index] = pickedCol;
-        prevCol = pickedCol;
-      }
-      // Set lines
-      console.log("LINE WIDTH: ", lineWidth);
+  let baseCol = shuffleColors ? colors.sort(() => Math.random() - 0.5) : colors;
+  let randShade = shades.sort(() => Math.random() - 0.5);
+  let mapShade = map(currY, 0, height, 100, 30);
+  let shade = (pick) => {
+    return true ? randShade[pick] : mapShade;
+  };
 
-      let wideLineWidth = halfLine ? 0.5 * lineWidth : lineWidth;
-      let wideLineStrokes = halfLine ? 12.5 : 25;
+  noStroke();
+  stroke(bgCol);
+  strokeWeight(0);
+  fill(...baseCol[0], shade(0));
+  beginShape();
+  vertex(...tlc);
+  vertex(...trc);
+  vertex(...rmc);
+  vertex(x, y);
+  endShape(CLOSE);
 
-      // constructor(color, width, height, strokeWidth, noOfStrokes)
-      this.lines[index] = new WideLine(
-        this.lineCols[index],
-        wideLineWidth,
-        this.h,
-        windowScale,
-        wideLineStrokes,
-        "Line fill"
-      );
-    }
-  }
+  fill(...baseCol[1], shade(1));
+  beginShape();
+  vertex(x, y);
+  vertex(...rmc);
+  vertex(...brc);
+  vertex(...blc);
+  endShape(CLOSE);
 
-  show(drawMargin = false) {
-    let x;
-    let lineOffset = !this.forShape && drawMargin ? 4 : 0;
-    for (let index = 0; index < noOfLines - lineOffset; index++) {
-      x =
-        index * lineWidth +
-        lineWidth / 2 +
-        (this.forShape && !shapeMargin ? 0 : margin);
-
-      strokeCap(SQUARE);
-
-      if (useTexture) {
-        push();
-        translate(x - lineWidth / 2, this.y);
-        this.lines[index].height = this.h;
-        this.lines[index].strokeWidth = windowScale;
-        this.lines[index].drawLines();
-        pop();
-      } else {
-        strokeWeight((halfLine ? 0.5 : 1) * lineWidth);
-        stroke(this.lineCols[index]);
-        line(x, this.y, x, this.h);
-      }
-
-      //stroke(50);
-      //strokeWeight(5 * windowScale);
-      //fill(this.lineCols[index]);
-      //rect(x, this.y, lineWidth, this.h);
-    }
-  }
-}
-
-class Diamond {
-  constructor(x, y, w, h) {
-    this.x = x;
-    this.y = y;
-    this.w = w;
-    this.h = h;
-  }
-
-  show() {
-    noStroke();
-    beginShape();
-    vertex(this.x, this.h / 2 + this.y);
-    vertex(this.x + this.w / 2, this.y);
-    vertex(this.x + this.w, this.h / 2 + this.y);
-    vertex(this.x + this.w / 2, this.h + this.y);
-    endShape(CLOSE);
-  }
-}
-
-class Round {
-  constructor(x, y, w, h) {
-    let wOffset;
-    if (!showMargin) {
-      wOffset = 4;
-    } else if (showMargin && !shapeMargin) {
-      wOffset = 2;
-    } else {
-      wOffset = 6;
-    }
-    this.x = -windowScale + x + w / 2;
-    this.y = y + h / 2;
-    this.w = w - wOffset * lineWidth;
-    this.h = h - (!shapeMargin && showMargin ? 2 : 4) * lineWidth;
-  }
-
-  show() {
-    noStroke();
-    ellipseMode(CENTER);
-    ellipse(this.x, this.y, this.w, this.h);
-  }
-}
-
-class SuperEllipse {
-  constructor(x, y, w, h) {
-    this.x = -windowScale + x;
-    this.y = y;
-    this.w = w;
-    this.h = h;
-    this.n = 2.5;
-    this.a = this.w / 2;
-    this.b = this.h / 2.38196601125;
-  }
-  show() {
-    push();
-    translate(this.x + this.w / 2, this.y + this.h / 2);
-    noStroke();
-    beginShape();
-    for (let t = 0; t <= 360; t += 5) {
-      let x = pow(abs(cos(t)), 2 / this.n) * this.a * sgn(cos(t));
-      let y = pow(abs(sin(t)), 2 / this.n) * this.b * sgn(sin(t));
-      vertex(x, y);
-    }
-    endShape(CLOSE);
-    pop();
-  }
-}
-
-class Square {
-  constructor(x, y, w, h) {
-    this.x = x;
-    this.y = y;
-    this.w = w;
-    this.h = h;
-    this.xOffset = shapeMargin ? 0 : this.x >= w / 2 ? -margin / 2 : margin / 2;
-  }
-
-  show() {
-    noStroke();
-    rectMode(CENTER);
-    let hAdjust;
-    if (margin && !shapeMargin) {
-      hAdjust = 2;
-    } else {
-      hAdjust = 6;
-    }
-    rect(
-      -windowScale + this.x + this.w / 2 + this.xOffset,
-      this.y + this.h / 2,
-      this.w - 8 * lineWidth,
-      this.h - hAdjust * lineWidth
-    );
-  }
-}
-
-class Sine {
-  constructor(x, y, w, h) {
-    this.x = x;
-    this.y = y;
-    this.w = w;
-    this.h = h;
-    this.diameter = sqrt(pow(this.h / 2, 2) + pow(this.w / 2, 2));
-    this.round = 200;
-  }
-
-  show() {
-    noStroke();
-    rectMode(CENTER);
-    push();
-    console.log("TRANSLATE: ", this.x + this.w / 2);
-    translate(this.x + this.w / 2, this.y + this.h / 2);
-    beginShape();
-    for (let t = 0; t <= 360; t += 5) {
-      let x, y;
-      if (t === 0 || t === 315) {
-        x = this.w / 2;
-        y = this.y - (shapeMargin ? margin : 0);
-        t += 45;
-      } else if (t === 135) {
-        x = -this.w / 2;
-        y = this.y - (shapeMargin ? margin : 0);
-        t += 90;
-      } else {
-        x = (this.diameter / 2) * cos(t);
-        y = (this.diameter / 2) * sin(t);
-      }
-      vertex(x, y);
-    }
-    endShape(CLOSE);
-    /*     rotate(45);
-    rect(
-      0,
-      0,
-      this.w - (showMargin ? 5.5 : 6) * lineWidth,
-      this.h - (showMargin ? 3.5 : 6) * lineWidth,
-      this.round,
-      0,
-      this.round,
-      0
-    ); */
-    pop();
-  }
-}
-class Hexagon {
-  constructor(x, y, w, h) {
-    this.x = x;
-    this.y = y;
-    this.w = w;
-    this.h = h;
-    this.gs = 0.25 * h;
-    this.yOffset = shapeMargin ? margin : 0;
-  }
-
-  show() {
-    noStroke();
-    rectMode(CENTER);
-    push();
-    //rotate(30);
-    translate(this.w / 2, -this.yOffset + this.y + this.h / 2);
-    //troke(20);
-    //circle(0, 0, 40);
-    //noStroke();
-    beginShape();
-    vertex(this.x - this.gs, this.y - sqrt(3) * this.gs);
-    vertex(this.x + this.gs, this.y - sqrt(3) * this.gs);
-    vertex(this.x + 2 * this.gs, this.y);
-    vertex(this.x + this.gs, this.y + sqrt(3) * this.gs);
-    vertex(this.x - this.gs, this.y + sqrt(3) * this.gs);
-    vertex(this.x - 2 * this.gs, this.y);
-    endShape(CLOSE);
-    pop();
-  }
-}
-
-class WideLine {
-  constructor(
-    color,
-    width,
-    height,
-    strokeWidth,
-    noOfStrokes,
-    context = "not set"
-  ) {
-    this.color = color;
-    this.width = width;
-    this.height = height;
-    this.strokeWidth = strokeWidth;
-    this.noOfStrokes = noOfStrokes;
-    this.strokes = [];
-    this.context = context;
-
-    for (let index = 0; index < this.noOfStrokes; index++) {
-      const colOffset = paletteOffset;
-      const posOffset = 0;
-      this.strokes[index] = {
-        h: random(-colOffset, colOffset) + this.color[0],
-        s: random(-colOffset, colOffset) + this.color[1],
-        b: random(-colOffset, colOffset) + this.color[2],
-        x1: index * this.strokeWidth,
-        y1: 0,
-        x2: index * this.strokeWidth,
-        y2: this.height,
-      };
-    }
-  }
-  drawLines() {
-    strokeCap(SQUARE);
-    strokeWeight(ceil(this.strokeWidth));
-
-    for (let index = 0; index < this.noOfStrokes; index++) {
-      this.strokes[index].y2 = this.height;
-      this.strokes[index].x1 = index * this.strokeWidth;
-      this.strokes[index].x2 = index * this.strokeWidth;
-      stroke(
-        this.strokes[index].h,
-        this.strokes[index].s,
-        this.strokes[index].b
-      );
-      line(
-        this.strokes[index].x1,
-        this.strokes[index].y1,
-        this.strokes[index].x2,
-        this.strokes[index].y2
-      );
-    }
-  }
+  fill(...baseCol[2], shade(2));
+  beginShape();
+  vertex(x, y);
+  vertex(...blc);
+  vertex(...lmc);
+  vertex(...tlc);
+  endShape(CLOSE);
 }
 
 function sgn(w) {
@@ -528,25 +169,6 @@ function sgn(w) {
     return 0;
   } else {
     return 1;
-  }
-}
-
-function getShape(shape, x, y, w, h) {
-  switch (shape) {
-    case "diamond":
-      return new Diamond(x, y, w, h);
-    case "round":
-      return new Round(x, y, w, h);
-    case "ellipse":
-      return new SuperEllipse(x, y, w, h);
-    case "square":
-      return new Square(x, y, w, h);
-    case "sine":
-      return new Sine(x, y, w, h);
-    case "hexagon":
-      return new Hexagon(x, y, w, h);
-    default:
-      break;
   }
 }
 
@@ -563,18 +185,12 @@ function windowResized() {
 
 function setDimensions() {
   if (aspect === 1) {
-    w = h = floor(min(windowWidth, windowHeight) / noOfLines) * noOfLines;
+    w = h = floor(min(windowWidth, windowHeight));
   } else if (aspect > 1) {
-    w = max(
-      renderSize,
-      floor(min(windowWidth, windowHeight * aspect) / noOfLines) * noOfLines
-    );
+    w = max(renderSize, floor(min(windowWidth, windowHeight)));
     h = w / aspect;
   } else if (aspect < 1) {
-    h =
-      floor(min(windowWidth / aspect, windowHeight) / (2 * noOfLines)) *
-      2 *
-      noOfLines;
+    h = floor(min(windowWidth, windowHeight));
     w = h * aspect;
   }
   windowScale = map(w, 0, referenceSize, 0, 1);
@@ -583,7 +199,7 @@ function setDimensions() {
 window.keyPressed = function () {
   if (key === "s" || key === "S") {
     console.log("SAVE");
-    saveCanvas("simnple_lines" + width * pd + "x" + height * pd, "png");
+    saveCanvas("Iso Boxes" + width * pd + "x" + height * pd, "png");
   }
   if (
     key === "1" ||
