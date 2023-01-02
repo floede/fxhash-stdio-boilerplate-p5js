@@ -12,6 +12,10 @@ const renderSize = 1000;
 const referenceSize = 1000;
 const aspect = 1 / 1;
 
+let noiseMax = 2;
+let slider;
+let zoff = 0;
+
 window.setup = function () {
   //Math.random = fxrand();
   randomSeed(fxrand() * 999999);
@@ -21,11 +25,44 @@ window.setup = function () {
   pixelDensity(pd);
 
   c = createCanvas(w, h);
+  slider = createSlider(0, 10, 0, 0.1);
   angleMode(DEGREES);
-  colorMode(HSB);
+  // colorMode(HSB);
 };
 
 window.draw = function () {
+  background(0);
+  translate(w / 2, h / 2);
+  //noiseMax = slider.value();
+  beginShape();
+  for (let a = 0; a < 360; a += 0.1) {
+    let xoff = map(cos(a), -1, 1, 0, noiseMax);
+    let yoff = map(sin(a), -1, 1, 0, noiseMax);
+    let r = map(noise(xoff, yoff, zoff), 0, 1, 150, 250);
+    let x = r * cos(a);
+    let y = r * sin(a);
+    stroke(255);
+    noFill();
+    vertex(x, y);
+    //t += 0.01;
+  }
+  endShape(CLOSE);
+
+  for (let a = 0; a < 360; a += 90) {
+    background(0);
+    let xoff = map(cos(a), -1, 1, 0, noiseMax);
+    let yoff = map(sin(a), -1, 1, 0, noiseMax);
+    stroke(255);
+
+    // fill(255);
+    // noStroke();
+    let arcAngle = map(noise(xoff, yoff), 0, 1, 0, 360);
+    // console.log("ANGLE: ", arcAngle);
+    arc(0, 0, 250, 250, 0 + arcAngle, 90 + arcAngle);
+    //t += 0.01;
+  }
+  zoff += 0.01;
+
   /*   strokeWeight(3);
   stroke(100);
   strokeWeight(2);
@@ -36,9 +73,7 @@ window.draw = function () {
   line(0, margin, w, margin);
   line(0, h - margin, w, h - margin); */
 
-  noLoop();
-
-  fxpreview();
+  //fxpreview();
 };
 
 features = {
@@ -71,18 +106,12 @@ function windowResized() {
 
 function setDimensions() {
   if (aspect === 1) {
-    w = h = floor(min(windowWidth, windowHeight) / noOfLines) * noOfLines;
+    w = h = floor(min(windowWidth, windowHeight));
   } else if (aspect > 1) {
-    w = max(
-      renderSize,
-      floor(min(windowWidth, windowHeight * aspect) / noOfLines) * noOfLines
-    );
+    w = max(renderSize, floor(min(windowWidth, windowHeight * aspect)));
     h = w / aspect;
   } else if (aspect < 1) {
-    h =
-      floor(min(windowWidth / aspect, windowHeight) / (2 * noOfLines)) *
-      2 *
-      noOfLines;
+    h = floor(min(windowWidth / aspect, windowHeight));
     w = h * aspect;
   }
   windowScale = map(w, 0, referenceSize, 0, 1);
@@ -91,7 +120,7 @@ function setDimensions() {
 window.keyPressed = function () {
   if (key === "s" || key === "S") {
     console.log("SAVE");
-    saveCanvas("simnple_lines" + width * pd + "x" + height * pd, "png");
+    saveCanvas("Genuary 23 - 01" + width * pd + "x" + height * pd, "png");
   }
   if (
     key === "1" ||
