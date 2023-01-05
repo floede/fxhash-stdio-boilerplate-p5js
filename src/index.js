@@ -33,11 +33,12 @@ window.setup = function () {
 };
 
 window.draw = function () {
-  background(30, 12, 93, 100);
-  noStroke();
+  background(30, 12, 3, 100);
+  stroke(30, 12, 93, 100);
+  noFill();
   let tw = triangleOffset * windowScale;
   for (let row = 0; row < triangles; row++) {
-    fill(132, row * 12, 78, 35); // 132, 29, 78
+    // fill(132, row * 12, 78, 35); // 132, 29, 78
     triangle(
       0,
       row * tw + tw,
@@ -46,7 +47,7 @@ window.draw = function () {
       0,
       row * tw + 4 * tw + tw
     );
-    fill(321, row * 12, 76, 35); // 321, 53, 76
+    //fill(321, row * 12, 76, 35); // 321, 53, 76
     triangle(
       w,
       row * tw + tw,
@@ -57,17 +58,17 @@ window.draw = function () {
     );
   }
 
-  // strokeWeight(3);
-  // stroke(100);
+  strokeWeight(3);
+  stroke(100);
   // strokeWeight(2);
-  // line(0, h / 2, w, h / 2);
-  // line(w / 2, 0, w / 2, h);
-  // line(0, boxSize, w, boxSize);
-  // line(boxSize, 0, boxSize, h);
+  line(0, h / 2, w, h / 2);
+  line(w / 2, 0, w / 2, h);
+  line(0, tw, w, tw);
+  // line(tw, 0, tw, h);
   // line(margin, 0, margin, h);
   // line(w - margin, 0, w - margin, h);
   // line(0, margin, w, margin);
-  // line(0, h - margin, w, h - margin);
+  line(0, h - tw, w, h - tw);
 
   //fxpreview();
   noLoop();
