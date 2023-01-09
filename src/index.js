@@ -2,7 +2,7 @@ import "p5";
 // Use random functions from stdio and not from p5
 import { random, randomBoolean, weight } from "@altesc/stdio";
 
-const title = "Genuary 23 - 04";
+const title = "Genuary 23 - 08";
 
 let c, w, h;
 let windowScale;
@@ -14,9 +14,11 @@ const renderSize = 1000;
 const referenceSize = 1000;
 const aspect = 1 / 1;
 
-let triangles = 5;
-let triangleOffset = referenceSize / 10;
-let triangleSize = 4 * triangleOffset;
+let R = (a = 1) => Math.random() * a;
+let L = (x, y) => (x * x + y * y) ** 0.5;
+
+const satOff = 15;
+const brightOff = 7;
 
 window.setup = function () {
   //Math.random = fxrand();
@@ -30,45 +32,49 @@ window.setup = function () {
   // slider = createSlider(0, 10, 0, 0.1);
   // angleMode(DEGREES);
   colorMode(HSB, 360, 100, 100, 100);
+  background(60, 16, 94, 100);
 };
 
 window.draw = function () {
-  background(30, 12, 3, 100);
-  stroke(30, 12, 93, 100);
-  noFill();
-  let tw = triangleOffset * windowScale;
-  for (let row = 0; row < triangles; row++) {
-    // fill(132, row * 12, 78, 35); // 132, 29, 78
-    triangle(
-      0,
-      row * tw + tw,
-      w,
-      row * tw + 2 * tw + tw,
-      0,
-      row * tw + 4 * tw + tw
-    );
-    //fill(321, row * 12, 76, 35); // 321, 53, 76
-    triangle(
-      w,
-      row * tw + tw,
-      0,
-      row * tw + 2 * tw + tw,
-      w,
-      row * tw + 4 * tw + tw
-    );
+  for (let k = 0; k < 40000; k++) {
+    let p = [R(2) - 1, R(2) - 1];
+    let d = sdf(p);
+    let outline = [
+      228,
+      15 + random(-satOff, satOff),
+      13 + random(-brightOff, brightOff),
+      100,
+    ];
+    let petals = [
+      20,
+      96 + random(-satOff, satOff),
+      84 + random(-brightOff, brightOff),
+      100,
+    ];
+    let bg = [
+      127,
+      30 + random(-satOff, satOff),
+      97 + random(-brightOff, brightOff),
+      100,
+    ];
+    let col = outline;
+    if (d < -0.025) col = petals;
+    if (d > 0.025) col = bg;
+    draw_circle(p, 10, col);
   }
+  noLoop();
 
   strokeWeight(3);
   stroke(100);
   // strokeWeight(2);
-  line(0, h / 2, w, h / 2);
-  line(w / 2, 0, w / 2, h);
-  line(0, tw, w, tw);
+  // line(0, h / 2, w, h / 2);
+  // line(w / 2, 0, w / 2, h);
+  // line(0, tw, w, tw);
   // line(tw, 0, tw, h);
   // line(margin, 0, margin, h);
   // line(w - margin, 0, w - margin, h);
   // line(0, margin, w, margin);
-  line(0, h - tw, w, h - tw);
+  // line(0, h - tw, w, h - tw);
 
   //fxpreview();
   noLoop();
@@ -80,6 +86,45 @@ features = {
 
 console.table(features);
 window.$fxhashFeatures = features;
+
+function draw_circle([x, y], r, c) {
+  noStroke();
+  fill(c);
+  circle(((x + 1) * width) / 2, ((y + 1) * width) / 2, r / 2);
+}
+
+function sdf_circle([x, y], [cx, cy], r) {
+  x -= cx;
+  y -= cy;
+  return L(x, y) - r;
+}
+
+function sdf_box([x, y], [cx, cy], [w, h]) {
+  x -= cx;
+  y -= cy;
+  return k(abs(x) - w, abs(y) - h);
+}
+
+let k = (a, b) => (a > 0 && b > 0 ? L(a, b) : a > b ? a : b);
+
+function sdf_rep(x, r) {
+  x /= r;
+  x -= Math.floor(x) + 0.5;
+  x *= r;
+  return x;
+}
+
+function sdf([x, y]) {
+  let bal = sdf_circle([x, y], [-0.5, 0], 0.3);
+  let box = sdf_box([x, y], [-0.35, 0.15], [0.15, 0.15]);
+  let bo2 = sdf_box([x, y], [-0, -0], [0.15, 0.15]);
+  x = abs(x) - 0.25;
+  y = abs(y) - 0.25;
+  return Math.min(
+    sdf_circle([x, y], [0, 0], 0.3),
+    sdf_box([x, y], [-0.15, -0.15], [0.15, 0.15])
+  );
+}
 
 function sgn(w) {
   if (w < 0) {
