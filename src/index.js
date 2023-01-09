@@ -2,7 +2,7 @@ import "p5";
 // Use random functions from stdio and not from p5
 import { random, randomBoolean, weight } from "@altesc/stdio";
 
-const title = "Genuary 23 - 08";
+const title = "Genuary 23 - 09";
 
 let c, w, h;
 let windowScale;
@@ -14,12 +14,6 @@ const renderSize = 1000;
 const referenceSize = 1000;
 const aspect = 1 / 1;
 
-let R = (a = 1) => Math.random() * a;
-let L = (x, y) => (x * x + y * y) ** 0.5;
-
-const satOff = 15;
-const brightOff = 7;
-
 window.setup = function () {
   //Math.random = fxrand();
   randomSeed(fxrand() * 999999);
@@ -30,42 +24,28 @@ window.setup = function () {
 
   c = createCanvas(w, h);
   // slider = createSlider(0, 10, 0, 0.1);
-  // angleMode(DEGREES);
+  angleMode(DEGREES);
   colorMode(HSB, 360, 100, 100, 100);
   background(60, 16, 94, 100);
 };
 
 window.draw = function () {
-  for (let k = 0; k < 40000; k++) {
-    let p = [R(2) - 1, R(2) - 1];
-    let d = sdf(p);
-    let outline = [
-      228,
-      15 + random(-satOff, satOff),
-      13 + random(-brightOff, brightOff),
-      100,
-    ];
-    let petals = [
-      20,
-      96 + random(-satOff, satOff),
-      84 + random(-brightOff, brightOff),
-      100,
-    ];
-    let bg = [
-      127,
-      30 + random(-satOff, satOff),
-      97 + random(-brightOff, brightOff),
-      100,
-    ];
-    let col = outline;
-    if (d < -0.025) col = petals;
-    if (d > 0.025) col = bg;
-    draw_circle(p, 10, col);
+  strokeWeight(3);
+  fill(137, 30, 51, 70);
+  stroke(144, 44, 29, 100);
+  for (let index = 0; index < 50; index++) {
+    drawGrass(
+      random(100, w - 100),
+      height,
+      random(40, 80),
+      3,
+      random(60, 100),
+      random(3, 6),
+      random(-20, 0)
+    );
   }
   noLoop();
 
-  strokeWeight(3);
-  stroke(100);
   // strokeWeight(2);
   // line(0, h / 2, w, h / 2);
   // line(w / 2, 0, w / 2, h);
@@ -87,43 +67,109 @@ features = {
 console.table(features);
 window.$fxhashFeatures = features;
 
-function draw_circle([x, y], r, c) {
+function drawGrass(x, y, stemLength, stemThickness, leafSize, pieces, angle) {
+  // Calculate the new x and y coordinates for the top of the stem
+  let newX = x + stemLength * sin(angle);
+  let newY = y - stemLength * cos(angle);
+
+  // Draw the stem of the grass
+  line(x, y, newX, newY);
+
+  // Draw a leaf at the end of the stem with a 50% chance
+  if (random() < 0.5) {
+    // Choose randomly whether to draw the leaf on the left or right side of the stem
+    if (random() < 0.5) {
+      push();
+      translate(newX - 0.5 * leafSize, newY);
+      // drawLeaf(x, y, angle, leftSide, size)
+      drawLeaf(0, 0, random(-20, 45), false, leafSize);
+      pop();
+    } else {
+      push();
+      translate(newX + 0.5 * leafSize, newY);
+      // drawLeaf(x, y, angle, leftSide, size)
+      drawLeaf(0, 0, random(-20, 45), true, leafSize);
+      pop();
+    }
+  }
+
+  // Recursively draw more grass on top of the current straw
+  if (pieces > 0) {
+    drawGrass(
+      newX,
+      newY,
+      stemLength + random(10),
+      stemThickness,
+      leafSize,
+      pieces - 1,
+      angle + random(-5, 10)
+    );
+  } else {
+    // drawFlower(x, y, size, rotation, petalColor, centerColor)
+    drawFlower(
+      newX,
+      newY,
+      random(45, 55),
+      random(0, 360),
+      [142, 6, 99, 100],
+      [127, 20, 16, 100]
+    );
+  }
+}
+
+function drawLeaf(x, y, angle, leftSide, size) {
+  push();
   noStroke();
-  fill(c);
-  circle(((x + 1) * width) / 2, ((y + 1) * width) / 2, r / 2);
+  translate(x, y);
+  //rotate(angle);
+  if (leftSide) {
+    rotate(-angle);
+    scale(-1, 1);
+  } else {
+    rotate(angle);
+  }
+  beginShape();
+  for (let t = 0; t <= 360; t += 5) {
+    let x, y;
+    if (t === 0 || t === 315) {
+      x = size / 2;
+      y = 0;
+      t += 45;
+    } else if (t === 135) {
+      x = -size / 2;
+      y = 0;
+      t += 90;
+    } else {
+      x = (size / 2) * cos(t);
+      y = (size / 2 / 7) * sin(t);
+    }
+    vertex(x, y);
+  }
+  endShape(CLOSE);
+  pop();
 }
 
-function sdf_circle([x, y], [cx, cy], r) {
-  x -= cx;
-  y -= cy;
-  return L(x, y) - r;
-}
+function drawFlower(x, y, size, rotation, petalColor, centerColor) {
+  push();
+  // Translate and rotate the coordinate system
+  translate(x, y);
+  rotate(rotation);
 
-function sdf_box([x, y], [cx, cy], [w, h]) {
-  x -= cx;
-  y -= cy;
-  return k(abs(x) - w, abs(y) - h);
-}
+  // Set the fill color for the petals
+  fill(petalColor);
 
-let k = (a, b) => (a > 0 && b > 0 ? L(a, b) : a > b ? a : b);
+  // Draw the four petals of the flower
+  ellipse(size / 2, 0, size, size);
+  ellipse(0, size / 2, size, size);
+  ellipse(-size / 2, 0, size, size);
+  ellipse(0, -size / 2, size, size);
 
-function sdf_rep(x, r) {
-  x /= r;
-  x -= Math.floor(x) + 0.5;
-  x *= r;
-  return x;
-}
+  // Set the fill color for the center of the flower
+  fill(centerColor);
 
-function sdf([x, y]) {
-  let bal = sdf_circle([x, y], [-0.5, 0], 0.3);
-  let box = sdf_box([x, y], [-0.35, 0.15], [0.15, 0.15]);
-  let bo2 = sdf_box([x, y], [-0, -0], [0.15, 0.15]);
-  x = abs(x) - 0.25;
-  y = abs(y) - 0.25;
-  return Math.min(
-    sdf_circle([x, y], [0, 0], 0.3),
-    sdf_box([x, y], [-0.15, -0.15], [0.15, 0.15])
-  );
+  // Draw the center of the flower
+  ellipse(0, 0, size / 2, size / 2);
+  pop();
 }
 
 function sgn(w) {
