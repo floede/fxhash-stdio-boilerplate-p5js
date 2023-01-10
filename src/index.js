@@ -14,10 +14,10 @@ const renderSize = 1000;
 const referenceSize = 1000;
 const aspect = 1 / 1;
 
-const variation = 0.5;
-const offset = 40;
+const variation = 0.25;
+const offset = 30;
 const xoff = 0.1;
-const yoff = 1;
+const yoff = 0.1;
 
 window.setup = function () {
   //Math.random = fxrand();
@@ -31,11 +31,28 @@ window.setup = function () {
   // slider = createSlider(0, 10, 0, 0.1);
   //angleMode(DEGREES);
   colorMode(HSB, 360, 100, 100, 100);
-  background(60, 16, 94, 100);
+  background(159, 5, 100, 100);
 };
 
 window.draw = function () {
-  drawSquigglyLine(50, h / 2, w - 50, h / 2, 2, [330, 100, 100, 100]);
+  let ystart = 300;
+  let offset = 20;
+  for (let index = 0; index < 5; index++) {
+    drawSquigglyLine(
+      50,
+      ystart + index * offset,
+      w - 50,
+      ystart + index * offset,
+      2,
+      [191, 44, 15, 100]
+    );
+  }
+
+  let nodeStart = 60;
+  let nodeGap = 40;
+  for (let j = 0; j < 16; j++) {
+    drawNode(nodeStart + j * nodeGap, h / 2 - random([-20, 0, 20, 40, 60]));
+  }
   noLoop();
 
   // strokeWeight(2);
@@ -79,6 +96,50 @@ function drawSquigglyLine(x1, y1, x2, y2, strokeWidth, color) {
     vertex(x, y);
   }
   endShape();
+}
+
+function drawEllipse(x, y, width, height, angle, color) {
+  noStroke();
+  fill(color);
+  push();
+  translate(x, y);
+  rotate(angle);
+
+  beginShape();
+  for (let i = 0; i <= TWO_PI; i += 0.1) {
+    let x = (width / 2) * cos(i) + random(-xoff, xoff);
+    let y = (height / 2) * sin(i) + random(-xoff, xoff);
+    vertex(x, y);
+  }
+  endShape();
+  pop();
+}
+
+function drawNode(x, y) {
+  const lineLen = 50;
+  if (random() < 0.75) {
+    if (random() < 0.5) {
+      drawSquigglyLine(
+        x + 10,
+        y - 2,
+        x + 14,
+        y - lineLen,
+        1.5,
+        [191, 44, 15, 100]
+      );
+      drawEllipse(x, y, 20, 10, -PI / 6, [191, 44, 15, 100]);
+    } else {
+      drawSquigglyLine(
+        x + 10,
+        y - 2 + 40,
+        x + 14,
+        y - lineLen - 2 + 40,
+        1.5,
+        [191, 44, 15, 100]
+      );
+      drawEllipse(x + 6, y - lineLen + 40, 20, 10, -PI / 6, [191, 44, 15, 100]);
+    }
+  }
 }
 
 function sgn(w) {
