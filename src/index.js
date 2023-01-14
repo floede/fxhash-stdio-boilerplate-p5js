@@ -2,7 +2,7 @@ import "p5";
 // Use random functions from stdio and not from p5
 import { random, randomBoolean, weight } from "@altesc/stdio";
 
-const title = "Genuary 23 - 11";
+const title = "Genuary 23 - 12";
 
 let c, w, h;
 let windowScale;
@@ -14,6 +14,10 @@ const renderSize = 1000;
 const referenceSize = 1000;
 const aspect = 1 / 1;
 
+let boxSize;
+const rows = 13;
+const cols = 10;
+
 window.setup = function () {
   //Math.random = fxrand();
   randomSeed(fxrand() * 999999);
@@ -21,6 +25,8 @@ window.setup = function () {
 
   setDimensions();
   pixelDensity(pd);
+
+  boxSize = 100 * windowScale;
 
   c = createCanvas(w, h);
   // slider = createSlider(0, 10, 0, 0.1);
@@ -30,6 +36,31 @@ window.setup = function () {
 };
 
 window.draw = function () {
+  strokeWeight(5 * windowScale);
+  let smallOffset = 0;
+  for (let row = 0; row < rows; row++) {
+    for (let col = 0; col < cols; col++) {
+      if (row % 2 === 0) {
+        rect(
+          col * boxSize + (row / 4) * boxSize, // x
+          0.75 * row * boxSize + (col / 2) * boxSize, // y
+          boxSize,
+          boxSize
+        );
+      } else {
+        rect(
+          col * boxSize + boxSize / 2 + ((row - 1) * boxSize) / 4, // x
+          (col / 2) * boxSize + row * boxSize - smallOffset * (boxSize / 2), // y
+          boxSize / 2,
+          boxSize / 2
+        );
+      }
+    }
+    if (row % 2 != 0) {
+      smallOffset++;
+    }
+  }
+
   // strokeWeight(2);
   // line(0, h / 2, w, h / 2);
   // line(w / 2, 0, w / 2, h);
