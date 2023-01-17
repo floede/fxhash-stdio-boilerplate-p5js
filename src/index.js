@@ -2,7 +2,7 @@ import "p5";
 // Use random functions from stdio and not from p5
 import { random, randomBoolean, weight } from "@altesc/stdio";
 
-const title = "Genuary 23 - 14";
+const title = "Genuary 23 - 15";
 
 let c, w, h;
 let windowScale;
@@ -14,11 +14,27 @@ const renderSize = 1000;
 const referenceSize = 1000;
 const aspect = 1 / 1;
 
-let variation = 0.5;
-let varSlider;
-const offset = 30;
-const xoff = 0.5;
-const yoff = 0.5;
+const cellSize = 10;
+
+const rows = renderSize / cellSize;
+const cols = renderSize / cellSize;
+
+const inputStart = 0;
+const inputEnd = 1000;
+const inRange = 2.5;
+const outRange = 0.5;
+
+const outputStart = 0;
+const outputEnd = 0.5;
+
+const minRange = 0;
+const maxRange = 360;
+
+let noiseMax = 2;
+let slider;
+let anim = 0;
+
+let grid = [];
 
 window.setup = function () {
   //Math.random = fxrand();
@@ -29,30 +45,50 @@ window.setup = function () {
   pixelDensity(pd);
 
   c = createCanvas(w, h);
-  // slider = createSlider(0, 10, 0, 0.1);
   //angleMode(DEGREES);
   colorMode(HSB, 360, 100, 100, 100);
   background(69, 8, 100, 100);
 
-  varSlider = createSlider(0, 1, 0.5);
+  frameRate(2);
+
+  for (let row = 0; row < rows; row++) {
+    let data = [];
+    for (let col = 0; col < cols; col++) {
+      let inX = map(col, 0, 100, -inRange, inRange);
+      let inY = map(row, 0, 100, -inRange, inRange);
+      data[col] = { x: row, y: col, value: f(inX, inY) }; //
+    }
+    grid[row] = data;
+  }
 };
 
 window.draw = function () {
-  variation = varSlider.value();
-  let ystart = 300;
-  let offset = 40;
-  for (let index = 0; index < 5; index++) {
-    drawSquigglyLine(
-      50,
-      ystart + index * offset,
-      w - 50,
-      ystart + index * offset,
-      2,
-      [191, 44, 15, 100]
-    );
-  }
+  console.log("GRID: ", grid);
+  noStroke();
 
-  noLoop();
+  //noiseMax = slider.value();
+
+  let xoff = map(cos(anim), -1, 1, 0, noiseMax);
+  let yoff = map(sin(anim), -1, 1, 0, noiseMax);
+  let offset = map(noise(xoff, yoff), 0, 1, 0, 360);
+
+  for (let row = 0; row < rows; row++) {
+    for (let col = 0; col < cols; col++) {
+      let data = grid[row][col];
+      let x = data.x * cellSize * windowScale + cellSize * windowScale * 0.5;
+      let y = data.y * cellSize * windowScale + cellSize * windowScale * 0.5;
+      let size = floor(
+        map(data.value, -outRange, outRange, 0, 10) * windowScale
+      );
+      let hue = map(data.value, -outRange, outRange, 0, 360);
+      fill(wrapAround(hue, offset), 70, 70, 100);
+      circle(x, y, size);
+    }
+  }
+  anim++;
+  if (anim > 360) {
+    anim = 0;
+  }
 
   // strokeWeight(2);
   // line(0, h / 2, w, h / 2);
@@ -75,26 +111,17 @@ features = {
 console.table(features);
 window.$fxhashFeatures = features;
 
-function drawSquigglyLine(x1, y1, x2, y2, strokeWidth, color) {
-  strokeWeight(strokeWidth);
-  stroke(color);
-  //noFill();
-  let x, y;
-  beginShape();
-  for (let i = 0; i <= 1; i += 0.0025) {
-    x =
-      x1 +
-      (x2 - x1) * i +
-      cos(i * PI * offset) * variation +
-      random(-xoff, xoff);
-    y =
-      y1 +
-      (y2 - y1) * i +
-      sin(i * PI * offset) * variation +
-      random(-yoff, yoff);
-    vertex(x, y);
+function f(x, y) {
+  return (x + y) / (1 + x * x + y * y);
+  //return cos(x) * sin(y);
+}
+
+function wrapAround(value, offset) {
+  let newValue = value + offset;
+  if (newValue > maxRange) {
+    newValue = minRange + (newValue - maxRange);
   }
-  endShape();
+  return newValue;
 }
 
 function sgn(w) {
