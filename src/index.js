@@ -2,34 +2,24 @@ import "p5";
 // Use random functions from stdio and not from p5
 import { random, randomBoolean, weight } from "@altesc/stdio";
 
-const title = "Genuary 23 - 17";
+const title = "Genuary 23 - 18";
 
 let c, w, h;
 let windowScale;
 let pd = 1;
 let bgCol;
-let bgLines;
 let features = {};
 const renderSize = 1000;
 const referenceSize = 1000;
 const aspect = 1 / 1;
 
-let gridDivsX;
-let gridDivsY;
+const noOfArcs = 100;
 
-// actual spacing between grid points
-let gridSpacingX;
-let gridSpacingY;
+let colStart = 0;
+let colEnd = 360;
 
-let bools = [];
-
-let rectInfo = [];
-let padding;
-
-const variation = 0.25;
-const offset = 30;
-const xoff = 0.1;
-const yoff = 0.1;
+let colStartSlider;
+let colEndSlider;
 
 window.setup = function () {
   //Math.random = fxrand();
@@ -41,41 +31,22 @@ window.setup = function () {
 
   c = createCanvas(w, h);
   // slider = createSlider(0, 10, 0, 0.1);
-  //angleMode(DEGREES);
+  // colStartSlider = createSlider(0, 360, 0, 1);
+  // colEndSlider = createSlider(0, 360, 360, 1);
+  angleMode(DEGREES);
   colorMode(HSB, 360, 100, 100, 100);
-  background(0, 90, 100, 100);
+  background(30, 10, 90, 100);
 
-  // size of the padding between grid and sketch borders
-  padding = w / 12;
-
-  // number of rows and columns of the grid
-  gridDivsX = 20;
-  gridDivsY = 20;
-
-  // actual spacing between grid points
-  gridSpacingX = (w - padding * 2) / gridDivsX;
-  gridSpacingY = (w - padding * 2) / gridDivsY;
-
-  for (let x = 0; x < gridDivsX; x++) {
-    var column = [];
-    for (let y = 0; y < gridDivsY; y++) {
-      column.push(1);
-    }
-    bools.push(column);
-  }
-
-  constructIrregularGrid([2, 3]);
-  constructIrregularGrid([1]);
-
-  background(0);
-  stroke(255);
-  strokeWeight(4);
   noFill();
-  drawGrid();
-  markEmptySpots();
 };
 
 window.draw = function () {
+  translate(width / 2, height / 2);
+  // colStart = colStartSlider.value();
+  // colEnd = colEndSlider.value();
+  for (let i = 0; i < noOfArcs; i++) {
+    drawRandomArc(colStart, colEnd);
+  }
   // strokeWeight(2);
   // line(0, h / 2, w, h / 2);
   // line(w / 2, 0, w / 2, h);
@@ -96,6 +67,20 @@ features = {
 
 console.table(features);
 window.$fxhashFeatures = features;
+
+function drawRandomArc(start, end) {
+  strokeCap(SQUARE);
+  strokeWeight(windowScale * random(60, 80));
+  let angle = Math.random() * 360;
+  let distance = Math.random() * width;
+  stroke(
+    map(angle, 0, 360, start, end),
+    map(distance, 0, width, 10, 90, true),
+    70,
+    20
+  );
+  arc(0, 0, distance, distance, 0 + angle, random(20, 40) + angle);
+}
 
 function drawSquigglyLine(x1, y1, x2, y2, strokeWidth, color) {
   strokeWeight(strokeWidth);
@@ -122,91 +107,6 @@ function drawSquigglyLine(x1, y1, x2, y2, strokeWidth, color) {
 function windowResized() {
   setDimensions();
   resizeCanvas(w, h);
-}
-
-function makeRect(posX, posY, dimX, dimY) {
-  this.posX = posX;
-  this.posY = posY;
-  this.dimX = dimX;
-  this.dimY = dimY;
-}
-
-function constructIrregularGrid(sizesArr) {
-  for (let x = 0; x < gridDivsX - max(sizesArr) + 1; x++) {
-    for (let y = 0; y < gridDivsY - max(sizesArr) + 1; y++) {
-      let xdim = random(sizesArr);
-      let ydim = random(sizesArr);
-
-      let fits = true;
-
-      // check if within bounds
-      if (x + xdim > gridDivsX || y + ydim > gridDivsY) {
-        fits = false;
-      }
-
-      // check if rectangle overlaps with any other rectangle
-      if (fits) {
-        for (let xc = x; xc < x + xdim; xc++) {
-          for (let yc = y; yc < y + ydim; yc++) {
-            if (bools[xc][yc] == 0) {
-              fits = false;
-            }
-          }
-        }
-      }
-
-      if (fits) {
-        // mark area as occupied
-        for (let xc = x; xc < x + xdim; xc++) {
-          for (let yc = y; yc < y + ydim; yc++) {
-            bools[xc][yc] = false;
-          }
-        }
-
-        rectInfo.push(new makeRect(x, y, xdim, ydim));
-      }
-    }
-  }
-}
-
-function drawGrid() {
-  for (let n = 0; n < rectInfo.length; n++) {
-    let r = rectInfo[n];
-    rect(
-      r.posX * gridSpacingX + padding,
-      r.posY * gridSpacingY + padding,
-      r.dimX * gridSpacingX,
-      r.dimY * gridSpacingY
-    );
-    // drawSquigglyLine(x1, y1, x2, y2, strokeWidth, color)
-    drawSquigglyLine(
-      r.posX * gridSpacingX + padding,
-      r.posY * gridSpacingY + padding,
-      r.dimX * gridSpacingX,
-      r.dimY * gridSpacingY,
-      2,
-      255
-    );
-    console.log(
-      r.posX * gridSpacingX + padding,
-      r.posY * gridSpacingY + padding,
-      r.dimX * gridSpacingX,
-      r.dimY * gridSpacingY
-    );
-  }
-}
-
-function markEmptySpots() {
-  for (let x = 0; x < gridDivsX; x++) {
-    for (let y = 0; y < gridDivsY; y++) {
-      if (bools[x][y]) {
-        point(
-          x * gridSpacingX + gridSpacingX / 2 + padding,
-          y * gridSpacingY + gridSpacingY / 2 + padding
-        );
-      }
-    }
-  }
 }
 
 function setDimensions() {
