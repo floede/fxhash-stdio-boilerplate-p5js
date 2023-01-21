@@ -2,7 +2,7 @@ import "p5";
 // Use random functions from stdio and not from p5
 import { random, randomBoolean, weight } from "@altesc/stdio";
 
-const title = "Genuary 23 - 18";
+const title = "Genuary 23 - 19";
 
 let c, w, h;
 let windowScale;
@@ -13,13 +13,19 @@ const renderSize = 1000;
 const referenceSize = 1000;
 const aspect = 1 / 1;
 
-const noOfArcs = 100;
+const grid = [];
+let HexSize;
+let HexSide;
 
-let colStart = 0;
-let colEnd = 360;
+let pattern;
+let hexes = [];
 
-let colStartSlider;
-let colEndSlider;
+let lineBase = 2;
+
+const white = [0, 0, 10];
+const black = [0, 0, 100];
+
+const colArr = [black, white];
 
 window.setup = function () {
   //Math.random = fxrand();
@@ -33,20 +39,45 @@ window.setup = function () {
   // slider = createSlider(0, 10, 0, 0.1);
   // colStartSlider = createSlider(0, 360, 0, 1);
   // colEndSlider = createSlider(0, 360, 360, 1);
-  angleMode(DEGREES);
-  colorMode(HSB, 360, 100, 100, 100);
-  background(30, 10, 90, 100);
+  colorMode(HSB);
+  background(black);
 
-  noFill();
+  HexSize = 100 * windowScale;
+  HexSide = HexSize / Math.sqrt(3);
+
+  noStroke();
+  for (let j = 0; j < 1 + h / HexSize; j++) {
+    let row = [];
+    for (let index = 0; index < 1 + w / HexSize; index++) {
+      if (j % 2 === 0) {
+        row[index] = [index * HexSize, j * HexSize];
+      } else {
+        row[index] = [index * HexSize + HexSize / 2, j * HexSize];
+      }
+    }
+    grid[j] = row;
+  }
 };
 
 window.draw = function () {
-  translate(width / 2, height / 2);
-  // colStart = colStartSlider.value();
-  // colEnd = colEndSlider.value();
-  for (let i = 0; i < noOfArcs; i++) {
-    drawRandomArc(colStart, colEnd);
+  for (let j = 0; j < grid.length; j++) {
+    for (let index = 0; index < grid[j].length; index++) {
+      let x = grid[j][index][0];
+      let y = grid[j][index][1];
+      push();
+      translate(x, y);
+      rotate(30 * (PI / 180));
+      rotate(60 * Math.round(random(1, 3)) * (PI / 180));
+      hexes.push(new Hex(HexSide, 0, 0, randdomGrey(), Math.round(random(3))));
+
+      rotate(60 * Math.round(random(1, 3)) * (PI / 180));
+      hexes.push(
+        new Hex(HexSide * 0.5, 0, 0, randdomGrey(), Math.round(random(3)))
+      );
+      pop();
+    }
   }
+
   // strokeWeight(2);
   // line(0, h / 2, w, h / 2);
   // line(w / 2, 0, w / 2, h);
@@ -68,40 +99,64 @@ features = {
 console.table(features);
 window.$fxhashFeatures = features;
 
-function drawRandomArc(start, end) {
-  strokeCap(SQUARE);
-  strokeWeight(windowScale * random(60, 80));
-  let angle = Math.random() * 360;
-  let distance = Math.random() * width;
-  stroke(
-    map(angle, 0, 360, start, end),
-    map(distance, 0, width, 10, 90, true),
-    70,
-    20
-  );
-  arc(0, 0, distance, distance, 0 + angle, random(20, 40) + angle);
+function randdomGrey() {
+  return colArr[Math.floor(random(colArr.length))];
 }
 
-function drawSquigglyLine(x1, y1, x2, y2, strokeWidth, color) {
-  strokeWeight(strokeWidth);
-  stroke(color);
-  //noFill();
-  let x, y;
-  beginShape();
-  for (let i = 0; i <= 1; i += 0.025) {
-    x =
-      x1 +
-      (x2 - x1) * i +
-      cos(i * PI * offset) * variation +
-      random(-xoff, xoff);
-    y =
-      y1 +
-      (y2 - y1) * i +
-      sin(i * PI * offset) * variation +
-      random(-yoff, yoff);
-    vertex(x, y);
+class Hex {
+  constructor(len, x, y, col, variation) {
+    this.gs = 0.5 * len;
+    this.len = len;
+    this.variation = variation;
+    this.lineWidth = lineBase * windowScale;
+
+    if (this.variation === 1) {
+      fill(white);
+    }
+
+    if (this.variation === 2) {
+      fill(black);
+    }
+
+    if (this.variation === 3) {
+      noFill();
+      strokeWeight(this.lineWidth);
+      stroke(white);
+      this.len = this.len - 0.5 * this.lineWidth;
+    }
+
+    beginShape();
+    for (let a = 0; a < TAU; a += TAU / 6) {
+      vertex(x + this.len * cos(a), y + this.len * sin(a));
+    }
+    endShape(CLOSE);
+
+    if (this.variation === 2) {
+      drawingContext.clip();
+      pattern = new StripePattern(x, y, len);
+    }
   }
-  endShape();
+}
+
+class StripePattern {
+  constructor(x, y, len) {
+    this.x = x;
+    this.y = y;
+    this.len = len;
+    this.lineWidth = lineBase * windowScale;
+    this.noOflines = len / this.lineWidth;
+    this.patternOffset = this.len - this.lineWidth;
+    for (let index = 0; index < this.noOflines; index++) {
+      stroke(white);
+      strokeWeight(this.lineWidth);
+      line(
+        this.x - len,
+        -this.patternOffset + this.y + index * 2 * this.lineWidth,
+        this.x + len,
+        -this.patternOffset + this.y + index * 2 * this.lineWidth
+      );
+    }
+  }
 }
 
 function windowResized() {
