@@ -13,19 +13,11 @@ const renderSize = 1000;
 const referenceSize = 1000;
 const aspect = 1 / 1;
 
-const grid = [];
-let HexSize;
-let HexSide;
+let grid = [];
+let colSize;
 
-let pattern;
-let hexes = [];
-
-let lineBase = 2;
-
-const white = [0, 0, 10];
-const black = [0, 0, 100];
-
-const colArr = [black, white];
+const white = [0, 0, 100];
+const black = [0, 0, 10];
 
 window.setup = function () {
   //Math.random = fxrand();
@@ -40,42 +32,33 @@ window.setup = function () {
   // colStartSlider = createSlider(0, 360, 0, 1);
   // colEndSlider = createSlider(0, 360, 360, 1);
   colorMode(HSB);
-  background(black);
+  background(white);
 
-  HexSize = 100 * windowScale;
-  HexSide = HexSize / Math.sqrt(3);
+  colSize = 100 * windowScale;
 
   noStroke();
-  for (let j = 0; j < 1 + h / HexSize; j++) {
-    let row = [];
-    for (let index = 0; index < 1 + w / HexSize; index++) {
-      if (j % 2 === 0) {
-        row[index] = [index * HexSize, j * HexSize];
+  for (let j = 0; j < w / colSize; j++) {
+    let col = { ...grid[j] };
+    console.log("GRID J: ", j, col);
+    //let prev = j < 1 ? undefined : grid[j].half;
+    if (!("half" in col)) {
+      if (random() < 0.3) {
+        grid[j] = { x: j * colSize, half: true };
       } else {
-        row[index] = [index * HexSize + HexSize / 2, j * HexSize];
+        grid[j] = { x: j * colSize, half: false };
+        grid[j + 1] = { half: false };
       }
     }
-    grid[j] = row;
   }
 };
 
 window.draw = function () {
-  for (let j = 0; j < grid.length; j++) {
-    for (let index = 0; index < grid[j].length; index++) {
-      let x = grid[j][index][0];
-      let y = grid[j][index][1];
-      push();
-      translate(x, y);
-      rotate(30 * (PI / 180));
-      rotate(60 * Math.round(random(1, 3)) * (PI / 180));
-      hexes.push(new Hex(HexSide, 0, 0, randdomGrey(), Math.round(random(3))));
-
-      rotate(60 * Math.round(random(1, 3)) * (PI / 180));
-      hexes.push(
-        new Hex(HexSide * 0.5, 0, 0, randdomGrey(), Math.round(random(3)))
-      );
-      pop();
-    }
+  background(white);
+  stroke(black);
+  for (let i = 0; i < grid.length; i++) {
+    console.log("X:", grid[i]);
+    let x = grid[i].x;
+    line(x, 0, x, h);
   }
 
   // strokeWeight(2);
@@ -98,10 +81,6 @@ features = {
 
 console.table(features);
 window.$fxhashFeatures = features;
-
-function randdomGrey() {
-  return colArr[Math.floor(random(colArr.length))];
-}
 
 class Hex {
   constructor(len, x, y, col, variation) {
@@ -134,27 +113,6 @@ class Hex {
     if (this.variation === 2) {
       drawingContext.clip();
       pattern = new StripePattern(x, y, len);
-    }
-  }
-}
-
-class StripePattern {
-  constructor(x, y, len) {
-    this.x = x;
-    this.y = y;
-    this.len = len;
-    this.lineWidth = lineBase * windowScale;
-    this.noOflines = len / this.lineWidth;
-    this.patternOffset = this.len - this.lineWidth;
-    for (let index = 0; index < this.noOflines; index++) {
-      stroke(white);
-      strokeWeight(this.lineWidth);
-      line(
-        this.x - len,
-        -this.patternOffset + this.y + index * 2 * this.lineWidth,
-        this.x + len,
-        -this.patternOffset + this.y + index * 2 * this.lineWidth
-      );
     }
   }
 }
