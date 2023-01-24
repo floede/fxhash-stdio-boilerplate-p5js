@@ -2,9 +2,9 @@ import "p5";
 // Use random functions from stdio and not from p5
 import { random, randomBoolean, weight } from "@altesc/stdio";
 
-const title = "Genuary 23 - 19";
+const title = "Genuary 23 - 24";
 
-let c, w, h;
+let canvas, w, h;
 let windowScale;
 let pd = 1;
 let bgCol;
@@ -13,11 +13,15 @@ const renderSize = 1000;
 const referenceSize = 1000;
 const aspect = 1 / 1;
 
-let grid = [];
-let colSize;
+const yellow = [55, 95, 98]; // #f9e60d
+const black = [216, 33, 34]; // #3a4556
 
-const white = [0, 0, 100];
-const black = [0, 0, 10];
+var n = 0;
+var c = 6;
+
+var points = [];
+
+var start = 0;
 
 window.setup = function () {
   //Math.random = fxrand();
@@ -27,39 +31,30 @@ window.setup = function () {
   setDimensions();
   pixelDensity(pd);
 
-  c = createCanvas(w, h);
+  canvas = createCanvas(w, h);
   // slider = createSlider(0, 10, 0, 0.1);
   // colStartSlider = createSlider(0, 360, 0, 1);
   // colEndSlider = createSlider(0, 360, 360, 1);
   colorMode(HSB);
-  background(white);
-
-  colSize = 100 * windowScale;
-
-  noStroke();
-  for (let j = 0; j < w / colSize; j++) {
-    let col = { ...grid[j] };
-    console.log("GRID J: ", j, col);
-    //let prev = j < 1 ? undefined : grid[j].half;
-    if (!("half" in col)) {
-      if (random() < 0.3) {
-        grid[j] = { x: j * colSize, half: true };
-      } else {
-        grid[j] = { x: j * colSize, half: false };
-        grid[j + 1] = { half: false };
-      }
-    }
-  }
 };
 
 window.draw = function () {
-  background(white);
-  stroke(black);
-  for (let i = 0; i < grid.length; i++) {
-    console.log("X:", grid[i]);
-    let x = grid[i].x;
-    line(x, 0, x, h);
+  background(yellow);
+  translate(w / 2, h / 2);
+  //rotate(n * 0.3);
+  for (var i = 0; i < n; i++) {
+    var a = i * 137.5;
+    var r = c * sqrt(i);
+    var x = r * cos(a);
+    var y = r * sin(a);
+    var hu = sin(start + i * 0.1);
+    hu = map(hu, -1, 1, 0, 360);
+    fill(black[0], black[1], black[2] + random(-10, 10));
+    noStroke();
+    ellipse(x, y, c + (0.1 * i) / 40, c + (0.1 * i) / 40);
   }
+  n += 5;
+  start += 0.1;
 
   // strokeWeight(2);
   // line(0, h / 2, w, h / 2);
@@ -72,7 +67,10 @@ window.draw = function () {
   // line(0, h - tw, w, h - tw);
 
   //fxpreview();
-  noLoop();
+  if (n > 5000) {
+    noLoop();
+  }
+  // noLoop();
 };
 
 features = {
