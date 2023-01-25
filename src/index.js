@@ -22,6 +22,7 @@ var c = 7;
 var points = [];
 
 var start = 0;
+let margin;
 
 window.setup = function () {
   //Math.random = fxrand();
@@ -30,6 +31,8 @@ window.setup = function () {
 
   setDimensions();
   pixelDensity(pd);
+
+  margin = w / 10;
 
   canvas = createCanvas(w, h);
   // slider = createSlider(0, 10, 0, 0.1);
@@ -52,7 +55,9 @@ window.draw = function () {
     fill(black[0], black[1], black[2] + random(-3, 3));
     //noStroke();
     stroke(yellow);
-    ellipse(x, y, c + (0.2 * i) / 40, c + (0.2 * i) / 40);
+    if (k(abs(x) - margin, abs(y) - margin) < 0) {
+      ellipse(x, y, c + (0.2 * i) / 40, c + (0.2 * i) / 40);
+    }
   }
   n += 5;
   start += 0.1;
@@ -81,45 +86,12 @@ features = {
 console.table(features);
 window.$fxhashFeatures = features;
 
-class Hex {
-  constructor(len, x, y, col, variation) {
-    this.gs = 0.5 * len;
-    this.len = len;
-    this.variation = variation;
-    this.lineWidth = lineBase * windowScale;
-
-    if (this.variation === 1) {
-      fill(white);
-    }
-
-    if (this.variation === 2) {
-      fill(black);
-    }
-
-    if (this.variation === 3) {
-      noFill();
-      strokeWeight(this.lineWidth);
-      stroke(white);
-      this.len = this.len - 0.5 * this.lineWidth;
-    }
-
-    beginShape();
-    for (let a = 0; a < TAU; a += TAU / 6) {
-      vertex(x + this.len * cos(a), y + this.len * sin(a));
-    }
-    endShape(CLOSE);
-
-    if (this.variation === 2) {
-      drawingContext.clip();
-      pattern = new StripePattern(x, y, len);
-    }
-  }
-}
-
 function windowResized() {
   setDimensions();
   resizeCanvas(w, h);
 }
+
+let k = (a, b) => (a > 0 && b > 0 ? L(a, b) : a > b ? a : b);
 
 function setDimensions() {
   if (aspect === 1) {
