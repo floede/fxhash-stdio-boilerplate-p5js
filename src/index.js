@@ -17,7 +17,7 @@ const yellow = [55, 95, 98]; // #f9e60d
 const black = [216, 33, 34]; // #3a4556
 
 var n = 0;
-var c = 6;
+var c = 7;
 
 var points = [];
 
@@ -41,7 +41,7 @@ window.setup = function () {
 window.draw = function () {
   background(yellow);
   translate(w / 2, h / 2);
-  //rotate(n * 0.3);
+  // rotate(n * 0.3);
   for (var i = 0; i < n; i++) {
     var a = i * 137.5;
     var r = c * sqrt(i);
@@ -49,9 +49,10 @@ window.draw = function () {
     var y = r * sin(a);
     var hu = sin(start + i * 0.1);
     hu = map(hu, -1, 1, 0, 360);
-    fill(black[0], black[1], black[2] + random(-10, 10));
-    noStroke();
-    ellipse(x, y, c + (0.1 * i) / 40, c + (0.1 * i) / 40);
+    fill(black[0], black[1], black[2] + random(-3, 3));
+    //noStroke();
+    stroke(yellow);
+    ellipse(x, y, c + (0.2 * i) / 40, c + (0.2 * i) / 40);
   }
   n += 5;
   start += 0.1;
@@ -67,7 +68,7 @@ window.draw = function () {
   // line(0, h - tw, w, h - tw);
 
   //fxpreview();
-  if (n > 5000) {
+  if (n > 6000) {
     noLoop();
   }
   // noLoop();
