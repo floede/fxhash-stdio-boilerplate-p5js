@@ -2,7 +2,7 @@ import "p5";
 // Use random functions from stdio and not from p5
 import { random, randomBoolean, weight } from "@altesc/stdio";
 
-const title = "Genuary 23 - 25";
+const title = "Genuary 23 - 30";
 
 let canvas, w, h;
 let windowScale;
@@ -15,14 +15,6 @@ const aspect = 1 / 1;
 
 const yellow = [55, 95, 98]; // #f9e60d
 const black = [216, 33, 34]; // #3a4556
-
-var n = 0;
-var c = 5;
-
-var points = [];
-
-var start = 0;
-let margin;
 
 window.setup = function () {
   //Math.random = fxrand();
@@ -43,26 +35,6 @@ window.setup = function () {
 
 window.draw = function () {
   background(yellow);
-  translate(w / 2, h / 2);
-  // rotate(n * 0.3);
-  for (var i = 0; i < n; i++) {
-    var a = i * 137.5;
-    var r = c * sqrt(i);
-    var x = r * cos(a);
-    var y = r * sin(a);
-    var hu = sin(start + i * 0.1);
-    hu = map(hu, -1, 1, 0, 360);
-    //noFill();
-    fill(black[0], black[1], black[2] + random(-3, 3));
-    noStroke();
-    //stroke(black);
-    //strokeWeight(c / 4);
-    if (k(abs(x) - 300, abs(y) - 300) < 0) {
-      ellipse(x, y, c + (0.08 * i) / 40, c + (0.08 * i) / 40);
-    }
-  }
-  n += 6;
-  start += 0.1;
 
   // strokeWeight(2);
   // line(0, h / 2, w, h / 2);
@@ -75,9 +47,7 @@ window.draw = function () {
   // line(0, h - tw, w, h - tw);
 
   //fxpreview();
-  if (n > 10000) {
-    noLoop();
-  }
+
   // noLoop();
 };
 
