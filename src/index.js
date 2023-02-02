@@ -13,8 +13,10 @@ const renderSize = 1000;
 const referenceSize = 1000;
 const aspect = 1 / 1;
 
-const yellow = [55, 95, 98]; // #f9e60d
-const black = [216, 33, 34]; // #3a4556
+let margin;
+
+let lines = [];
+const noOfLines = 10;
 
 window.setup = function () {
   //Math.random = fxrand();
@@ -27,14 +29,45 @@ window.setup = function () {
   margin = w / 10;
 
   canvas = createCanvas(w, h);
-  // slider = createSlider(0, 10, 0, 0.1);
-  // colStartSlider = createSlider(0, 360, 0, 1);
-  // colEndSlider = createSlider(0, 360, 360, 1);
   colorMode(HSB);
 };
 
 window.draw = function () {
-  background(yellow);
+  background(colors[0].hsb);
+
+  for (let index = 0; index < noOfLines; index++) {
+    let element;
+    let elementRoll = random();
+    let orientationRoll = random();
+
+    if (elementRoll < 0.25) {
+      element = new BigLine(
+        random(margin, w - margin),
+        orientationRoll < 0.5 ? "vertical" : "horizontal",
+        random(2, 4),
+        colors[1 + floor(random(colors.length - 1))].hsb
+      );
+    } else if (elementRoll > 0.25 && elementRoll < 0.75) {
+      element = new SmallLine(
+        random(margin, w - margin),
+        orientationRoll < 0.5 ? "vertical" : "horizontal",
+        random(2, 4),
+        colors[1 + floor(random(colors.length - 1))].hsb
+      );
+    } else {
+      element = new Lines(
+        random(margin, w - margin),
+        orientationRoll < 0.5 ? "vertical" : "horizontal",
+        random(2, 4),
+        colors[1 + floor(random(colors.length - 1))].hsb
+      );
+    }
+    lines[index] = element;
+  }
+
+  for (let j = 0; j < noOfLines; j++) {
+    lines[j].show();
+  }
 
   // strokeWeight(2);
   // line(0, h / 2, w, h / 2);
@@ -48,7 +81,7 @@ window.draw = function () {
 
   //fxpreview();
 
-  // noLoop();
+  noLoop();
 };
 
 features = {
@@ -61,6 +94,70 @@ window.$fxhashFeatures = features;
 function windowResized() {
   setDimensions();
   resizeCanvas(w, h);
+}
+
+class SmallLine {
+  constructor(pos, direction, width, col) {
+    this.pos = pos;
+    this.direction = direction;
+    this.width = 25 * width * windowScale;
+    this.color = col;
+  }
+  show() {
+    push();
+    stroke(this.color);
+    strokeWeight(this.width);
+    if (this.direction === "vertical") {
+      line(this.pos, 0, this.pos, h);
+    } else {
+      line(0, this.pos, w, this.pos);
+    }
+    pop();
+  }
+}
+
+class BigLine {
+  constructor(pos, direction, width, col) {
+    this.pos = pos;
+    this.direction = direction;
+    this.width = 50 * width * windowScale;
+    this.color = col;
+  }
+  show() {
+    push();
+    stroke(this.color);
+    strokeWeight(this.width);
+    if (this.direction === "vertical") {
+      line(this.pos, 0, this.pos, h);
+    } else {
+      line(0, this.pos, w, this.pos);
+    }
+    pop();
+  }
+}
+
+class Lines {
+  constructor(pos, direction, width, col) {
+    this.pos = pos;
+    this.direction = direction;
+    this.width = 2 * width * windowScale;
+    this.color = col;
+  }
+  show() {
+    push();
+    stroke(this.color);
+    strokeWeight(this.width);
+    if (this.direction === "vertical") {
+      line(this.pos - 8 * this.width, 0, this.pos - 8 * this.width, h);
+      line(this.pos, 0, this.pos, h);
+      line(this.pos + 8 * this.width, 0, this.pos + 8 * this.width, h);
+    } else {
+      line(0, this.pos - 8 * this.width, w, this.pos - 8 * this.width);
+      line(0, this.pos, w, this.pos);
+      line(0, this.pos + 8 * this.width, w, this.pos + 8 * this.width);
+    }
+    pop();
+  }
 }
 
 let R = (a = 1) => Math.random() * a;
