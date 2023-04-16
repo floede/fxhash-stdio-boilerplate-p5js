@@ -2,7 +2,7 @@ import "p5";
 // Use random functions from stdio and not from p5
 import { random, randomBoolean, weight } from "@altesc/stdio";
 
-const title = "Genuary 23 - 18";
+const title = "Genuary 23 - 31";
 
 let c, w, h;
 let windowScale;
@@ -13,7 +13,7 @@ const renderSize = 1000;
 const referenceSize = 1000;
 const aspect = 1 / 1;
 
-const noOfArcs = 100;
+const noOfArcs = 250;
 
 let colStart = 0;
 let colEnd = 360;
@@ -70,38 +70,38 @@ window.$fxhashFeatures = features;
 
 function drawRandomArc(start, end) {
   strokeCap(SQUARE);
-  strokeWeight(windowScale * random(60, 80));
+  strokeWeight(windowScale * random(80, 200));
   let angle = Math.random() * 360;
   let distance = Math.random() * width;
   stroke(
     map(angle, 0, 360, start, end),
     map(distance, 0, width, 10, 90, true),
     70,
-    20
+    random(10, 30)
   );
-  arc(0, 0, distance, distance, 0 + angle, random(20, 40) + angle);
-}
+  fill(30, 10, 10, 100);
+  let roll = random([1, 2, 3]);
+  let x = sin(angle) * distance;
+  let y = cos(angle) * distance;
+  let smallDist = distance / 10;
 
-function drawSquigglyLine(x1, y1, x2, y2, strokeWidth, color) {
-  strokeWeight(strokeWidth);
-  stroke(color);
-  //noFill();
-  let x, y;
-  beginShape();
-  for (let i = 0; i <= 1; i += 0.025) {
-    x =
-      x1 +
-      (x2 - x1) * i +
-      cos(i * PI * offset) * variation +
-      random(-xoff, xoff);
-    y =
-      y1 +
-      (y2 - y1) * i +
-      sin(i * PI * offset) * variation +
-      random(-yoff, yoff);
-    vertex(x, y);
+  switch (roll) {
+    case 1:
+      line(x, y, x + 2 * smallDist, y + 2 * smallDist);
+      break;
+    case 2:
+      rect(x, y, smallDist, smallDist);
+      break;
+    case 3:
+      circle(x, y, smallDist);
+      break;
+    case 4:
+      arc(0, 0, distance, distance, 0 + angle, random(20, 40) + angle);
+      break;
+
+    default:
+      break;
   }
-  endShape();
 }
 
 function windowResized() {
